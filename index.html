@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ce que tu sais déjà sur l’ordinateur — QCM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --desk:#DCE1E4;
+    --panel:#F7F9FA;
+    --key:#FFFFFF;
+    --bevel:#A7B3BB;
+    --bevel-deep:#7D8B95;
+    --ink:#17212B;
+    --ink-soft:#5C6C79;
+    --wire:#2447E8;
+    --ok:#1B8C4E;
+    --ok-bevel:#146B3B;
+    --no:#C7362F;
+    --no-bevel:#992620;
+  }
+
+  *{box-sizing:border-box}
+
+  html,body{margin:0;padding:0}
+
+  body{
+    background:var(--desk);
+    color:var(--ink);
+    font-family:"Chivo","Segoe UI",Helvetica,Arial,sans-serif;
+    font-weight:400;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:24px 16px 64px;
+  }
+
+  .machine{max-width:720px;margin:0 auto}
+
+  /* ---------- entête ---------- */
+  .top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:10px;
+    min-height:24px;
+  }
+  .top-title{font-size:.95rem;font-weight:700;letter-spacing:.01em}
+  .top-count{font-size:.95rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+  .strip{display:flex;gap:3px;margin-bottom:22px}
+  .strip i{
+    flex:1;
+    height:9px;
+    border-radius:2px;
+    background:#C2CBD1;
+    box-shadow:0 1px 0 #AAB6BE;
+  }
+  .strip i.now{background:var(--ink)}
+  .strip i.ok{background:var(--ok)}
+  .strip i.no{background:var(--no)}
+
+  /* ---------- panneau ---------- */
+  .panel{
+    background:var(--panel);
+    border:1px solid #C6CFD5;
+    border-radius:6px;
+    padding:28px 26px 26px;
+    box-shadow:0 2px 0 rgba(125,139,149,.35);
+  }
+
+  .theme{
+    font-size:.9rem;
+    font-weight:700;
+    color:var(--wire);
+    margin:0 0 14px;
+  }
+
+  h1{
+    font-weight:900;
+    font-size:2.1rem;
+    line-height:1.12;
+    letter-spacing:-.02em;
+    margin:0 0 14px;
+    max-width:22ch;
+  }
+  .question{
+    font-weight:700;
+    font-size:1.32rem;
+    line-height:1.3;
+    letter-spacing:-.01em;
+    margin:0 0 22px;
+  }
+  p{margin:0 0 14px;max-width:62ch}
+  .lead{color:var(--ink-soft)}
+
+  /* ---------- touches ---------- */
+  .keys{display:flex;flex-direction:column;gap:11px;margin:0}
+
+  .key{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    text-align:left;
+    font:inherit;
+    font-size:1.02rem;
+    color:var(--ink);
+    background:var(--key);
+    border:1px solid var(--bevel);
+    border-radius:8px;
+    padding:13px 16px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--bevel);
+    transition:transform .07s ease, box-shadow .07s ease, background .12s ease;
+  }
+  .key:hover:not(:disabled){background:#F0F5F8}
+  .key:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 var(--bevel)}
+  .key:focus-visible{outline:3px solid var(--wire);outline-offset:3px}
+  .key:disabled{cursor:default}
+
+  .cap{
+    flex:0 0 auto;
+    width:30px;height:30px;
+    display:grid;place-items:center;
+    border-radius:5px;
+    background:#EDF1F4;
+    border:1px solid var(--bevel);
+    font-weight:900;
+    font-size:.92rem;
+  }
+
+  .key.picked-ok{
+    background:#E7F5EC;border-color:var(--ok);
+    box-shadow:0 4px 0 var(--ok-bevel);transform:translateY(0);
+  }
+  .key.picked-ok .cap{background:var(--ok);border-color:var(--ok-bevel);color:#fff}
+  .key.picked-no{
+    background:#FBEAE9;border-color:var(--no);
+    box-shadow:0 4px 0 var(--no-bevel);transform:translateY(0);
+  }
+  .key.picked-no .cap{background:var(--no);border-color:var(--no-bevel);color:#fff}
+  .key.reveal{background:#EFF7F2;border-color:var(--ok)}
+  .key.dim{opacity:.5}
+
+  /* ---------- retour ---------- */
+  .verdict{
+    margin-top:22px;
+    border-left:4px solid var(--bevel);
+    padding:2px 0 2px 16px;
+  }
+  .verdict.good{border-left-color:var(--ok)}
+  .verdict.bad{border-left-color:var(--no)}
+  .verdict b{display:block;font-weight:900;margin-bottom:3px}
+  .verdict.good b{color:var(--ok)}
+  .verdict.bad b{color:var(--no)}
+  .verdict p{margin:0;font-size:.97rem;color:var(--ink-soft)}
+
+  .row{display:flex;justify-content:flex-end;margin-top:24px}
+
+  .bigkey{
+    font:inherit;font-weight:700;font-size:1.05rem;
+    color:var(--ink);
+    background:var(--key);
+    border:1px solid var(--bevel-deep);
+    border-radius:8px;
+    padding:14px 30px;
+    cursor:pointer;
+    box-shadow:0 5px 0 var(--bevel-deep);
+    transition:transform .07s ease, box-shadow .07s ease;
+  }
+  .bigkey:active{transform:translateY(5px);box-shadow:0 0 0 var(--bevel-deep)}
+  .bigkey:focus-visible{outline:3px solid var(--wire);outline-offset:3px}
+  .bigkey.wire{background:var(--wire);color:#fff;border-color:#152C93;box-shadow:0 5px 0 #152C93}
+  .bigkey.wire:active{box-shadow:0 0 0 #152C93}
+
+  .hint{font-size:.86rem;color:var(--ink-soft);margin:18px 0 0}
+  kbd{
+    font:inherit;font-size:.8rem;font-weight:700;
+    background:var(--key);border:1px solid var(--bevel);
+    border-bottom-width:2px;border-radius:4px;padding:1px 6px;
+  }
+
+  /* ---------- résultats ---------- */
+  .score{
+    display:flex;align-items:baseline;gap:12px;
+    margin:0 0 6px;
+  }
+  .score b{font-size:3.4rem;font-weight:900;letter-spacing:-.03em;line-height:1}
+  .score span{font-size:1.1rem;color:var(--ink-soft)}
+
+  .bars{margin:26px 0 8px;display:flex;flex-direction:column;gap:16px}
+  .bar-head{display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px;gap:12px}
+  .bar-head em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+  .track{height:12px;background:#D3DBE0;border-radius:3px;overflow:hidden}
+  .fill{height:100%;background:var(--wire);border-radius:3px}
+  .bar-note{font-size:.9rem;color:var(--ink-soft);margin:6px 0 0}
+
+  .misses{margin:28px 0 0;padding:0;list-style:none}
+  .misses li{
+    padding:12px 0;
+    border-top:1px solid #CFD8DD;
+  }
+  .misses q{display:block;font-weight:700;quotes:none}
+  .misses em{display:block;font-style:normal;font-size:.94rem;color:var(--ink-soft);margin-top:3px}
+  .misses em b{color:var(--ok);font-weight:700}
+
+  h2{font-size:1.05rem;font-weight:900;margin:30px 0 0}
+
+  @media (max-width:520px){
+    body{padding:16px 12px 48px}
+    .panel{padding:22px 18px}
+    h1{font-size:1.7rem}
+    .question{font-size:1.15rem}
+    .key{font-size:.97rem;gap:11px;padding:12px 13px}
+    .score b{font-size:2.8rem}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important}
+  }
+
+  @media print{
+    body{background:#fff;padding:0}
+    .panel{border:none;box-shadow:none;padding:0}
+    .row,.hint,.strip{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="machine">
+  <div class="top">
+    <div class="top-title" id="topTitle"></div>
+    <div class="top-count" id="topCount"></div>
+  </div>
+  <div class="strip" id="strip" aria-hidden="true"></div>
+  <div class="panel" id="panel"></div>
+  <p class="hint" id="hint"></p>
+</div>
+
+<script>
+const THEMES = [
+  { id:"vocab",  nom:"Le vocabulaire de base", note:"Les mots qu’on utilise tous les jours devant un écran." },
+  { id:"pc",     nom:"Dans l’ordinateur",      note:"Les pièces de la machine, et la façon dont elle compte." },
+  { id:"reseau", nom:"Le réseau et internet",  note:"Comment les machines communiquent entre elles." },
+  { id:"algo",   nom:"Programmer avec Scratch", note:"Instructions, variables, boucles et conditions." }
+];
+
+const Q = [
+  { t:"vocab", q:"À quoi sert une imprimante ?",
+    r:["Mettre sur papier un document affiché à l’écran",
+       "Copier un document papier dans l’ordinateur",
+       "Agrandir l’image de l’écran",
+       "Protéger l’ordinateur des virus"], b:0,
+    e:"Elle transforme un fichier en feuille de papier. L’appareil qui fait l’inverse, du papier vers l’ordinateur, s’appelle un scanner." },
+
+  { t:"vocab", q:"La souris permet surtout de :",
+    r:["Déplacer le pointeur et cliquer sur ce qu’on veut",
+       "Écrire du texte",
+       "Régler le volume du son",
+       "Se connecter au Wi-Fi"], b:0,
+    e:"Pour écrire, c’est le clavier. La souris déplace le pointeur (le curseur) et sert à cliquer." },
+
+  { t:"vocab", q:"Un logiciel, c’est :",
+    r:["Un programme installé sur la machine, qui sert à faire quelque chose",
+       "Une pièce électronique à l’intérieur du boîtier",
+       "Le câble qui relie l’écran",
+       "Un autre nom pour l’écran tactile"], b:0,
+    e:"Un logiciel (ou une application) est fait de code, pas de métal. Tout ce qu’on peut toucher, c’est le matériel." },
+
+  { t:"vocab", q:"Lequel de ces appareils est un périphérique de sortie, c’est-à-dire qu’il donne une information à l’utilisateur ?",
+    r:["L’imprimante", "Le clavier", "La webcam", "Le microphone"], b:0,
+    e:"Entrée : on donne une information à l’ordinateur (clavier, souris, micro, webcam). Sortie : l’ordinateur nous donne une information (écran, haut-parleur, imprimante)." },
+
+  { t:"vocab", q:"Comment appelle-t-on l’endroit où on range et classe ses fichiers ?",
+    r:["Un dossier", "Un onglet", "Un pilote", "Un raccourci"], b:0,
+    e:"Un dossier (ou répertoire) contient des fichiers et d’autres dossiers, comme une pochette dans un classeur." },
+
+  { t:"vocab", q:"Windows, macOS et Linux sont :",
+    r:["Des systèmes d’exploitation", "Des navigateurs internet", "Des antivirus", "Des marques d’écran"], b:0,
+    e:"Le système d’exploitation est le logiciel principal : il fait fonctionner la machine et permet de lancer tous les autres logiciels." },
+
+  { t:"vocab", q:"Tu travailles sur un texte et tu cliques sur « Enregistrer ». Que se passe-t-il ?",
+    r:["Le document est écrit dans la mémoire de stockage, pour être retrouvé plus tard",
+       "Le document part directement à l’imprimante",
+       "Le document est publié sur internet",
+       "Le document est fermé et effacé"], b:0,
+    e:"Tant qu’on n’a pas enregistré, le travail n’existe que dans la mémoire vive : il disparaît si l’ordinateur s’éteint." },
+
+  { t:"vocab", q:"Un fichier s’appelle « vacances.jpg ». Que contient-il très probablement ?",
+    r:["Une photo", "Une chanson", "Une vidéo", "Un tableau de nombres"], b:0,
+    e:"Les lettres après le point (l’extension) annoncent le type de fichier : .jpg et .png pour les images, .mp3 pour le son, .mp4 pour la vidéo, .pdf pour un document." },
+
+  { t:"pc", q:"Quel composant fait les calculs et dirige tout le reste de la machine ?",
+    r:["Le processeur", "Le disque dur", "L’alimentation", "L’écran"], b:0,
+    e:"Le processeur (CPU) est le chef d’orchestre : il exécute les instructions des logiciels, des milliards de fois par seconde." },
+
+  { t:"pc", q:"Tu éteins l’ordinateur. Où tes fichiers restent-ils conservés ?",
+    r:["Sur le disque dur ou le SSD", "Dans la mémoire vive (RAM)", "Dans le processeur", "Dans le câble d’alimentation"], b:0,
+    e:"Le disque dur ou le SSD garde les données même sans électricité. La mémoire vive, elle, se vide entièrement à l’extinction." },
+
+  { t:"pc", q:"À quoi sert la mémoire vive (RAM) ?",
+    r:["À garder sous la main les données des programmes en train de tourner",
+       "À conserver les fichiers pour toujours",
+       "À afficher l’image sur l’écran",
+       "À se connecter à internet"], b:0,
+    e:"C’est une mémoire très rapide mais temporaire. Plus il y en a, plus on peut faire tourner de programmes en même temps sans ralentir." },
+
+  { t:"pc", q:"Sur quelle grande carte tous les composants viennent-ils se brancher ?",
+    r:["La carte mère", "La carte graphique", "La carte SD", "La carte son"], b:0,
+    e:"La carte mère relie tout : processeur, mémoire, stockage, ports USB. C’est la colonne vertébrale de la machine." },
+
+  { t:"pc", q:"La carte graphique sert à :",
+    r:["Calculer les images affichées à l’écran",
+       "Stocker les photos",
+       "Refroidir le processeur",
+       "Brancher le clavier"], b:0,
+    e:"Elle est très sollicitée par les jeux vidéo et le montage vidéo, qui demandent d’afficher beaucoup d’images par seconde." },
+
+  { t:"pc", q:"Quelle est la plus grande capacité de stockage ?",
+    r:["1 To", "900 Go", "5 000 Mo", "100 000 Ko"], b:0,
+    e:"L’ordre de grandeur est : Ko, puis Mo, puis Go, puis To. 1 To vaut environ 1 000 Go, c’est donc de loin le plus grand." },
+
+  { t:"pc", q:"Lequel de ces éléments se trouve à l’intérieur de l’unité centrale ?",
+    r:["L’alimentation", "L’écran", "La souris", "L’imprimante"], b:0,
+    e:"L’unité centrale contient la carte mère, le processeur, la mémoire, le stockage et l’alimentation. Le reste est branché autour : ce sont les périphériques." },
+
+  { t:"pc", q:"À quoi servent les ventilateurs dans un ordinateur ?",
+    r:["À évacuer la chaleur produite par les composants",
+       "À faire circuler l’électricité",
+       "À rendre l’ordinateur plus silencieux",
+       "À aspirer la poussière"], b:0,
+    e:"Les composants chauffent quand ils travaillent. S’ils chauffent trop, ils ralentissent ou s’abîment : les ventilateurs et les radiateurs évacuent cette chaleur." },
+
+  { t:"pc", q:"À l’intérieur, un ordinateur ne manipule que des 0 et des 1. Pourquoi ?",
+    r:["Parce que ses circuits ne savent distinguer que deux états : le courant passe, ou il ne passe pas",
+       "Parce que c’est plus rapide à taper au clavier",
+       "Parce que les autres chiffres prennent trop de place sur le disque dur",
+       "Parce que c’est le seul langage que les humains comprennent"], b:0,
+    e:"Chaque 0 ou 1 s’appelle un bit. Texte, images, sons : tout est traduit en suites de bits, parce que c’est la seule chose que l’électronique sait représenter de façon sûre." },
+
+  { t:"pc", q:"Le nombre 101, écrit en binaire, vaut :",
+    r:["5", "3", "11", "101"], b:0,
+    e:"En binaire chaque position vaut le double de la précédente : 4, 2, 1. Ici on a un 4, pas de 2, et un 1, donc 4 + 1 = 5." },
+
+  { t:"reseau", q:"Internet, c’est :",
+    r:["Un immense réseau qui relie des millions de machines dans le monde",
+       "Un logiciel installé sur l’ordinateur",
+       "Un site web très connu",
+       "Une marque de matériel informatique"], b:0,
+    e:"Internet est le réseau lui-même : des câbles, des antennes et des machines. Le Web, c’est-à-dire les sites, n’est qu’une des choses qui circulent dessus." },
+
+  { t:"reseau", q:"Le Wi-Fi permet de :",
+    r:["Relier un appareil au réseau sans câble, grâce à des ondes radio",
+       "Rendre la connexion plus rapide que partout ailleurs",
+       "Stocker des fichiers dans les airs",
+       "Alimenter l’appareil en électricité"], b:0,
+    e:"Le Wi-Fi ne remplace pas internet : c’est seulement le moyen d’atteindre la box sans fil, sur quelques dizaines de mètres." },
+
+  { t:"reseau", q:"Firefox, Chrome, Safari et Edge sont :",
+    r:["Des navigateurs", "Des moteurs de recherche", "Des systèmes d’exploitation", "Des réseaux sociaux"], b:0,
+    e:"Le navigateur est le logiciel qui affiche les pages web. C’est la fenêtre par laquelle on regarde le web." },
+
+  { t:"reseau", q:"Google, Bing, Qwant et DuckDuckGo sont :",
+    r:["Des moteurs de recherche, qu’on utilise dans un navigateur",
+       "Des navigateurs",
+       "Des systèmes d’exploitation",
+       "Des types de câbles réseau"], b:0,
+    e:"Un moteur de recherche est un service qui cherche des pages à ta place. Il ne faut pas le confondre avec le navigateur, qui est le logiciel dans lequel on l’ouvre." },
+
+  { t:"reseau", q:"Tu regardes une vidéo en ligne. D’où viennent les images ?",
+    r:["D’un serveur : un ordinateur distant, allumé en permanence, qui te les envoie",
+       "Des ondes Wi-Fi, qui les fabriquent",
+       "Du disque dur de ton ordinateur",
+       "De la carte graphique de ton ordinateur"], b:0,
+    e:"Un serveur est un ordinateur qui rend un service aux autres. Ta machine joue le rôle de client : elle demande, le serveur répond." },
+
+  { t:"reseau", q:"À quoi sert une adresse IP ?",
+    r:["À identifier un appareil sur le réseau, pour savoir où envoyer les données",
+       "À protéger l’ordinateur des virus",
+       "À mesurer la vitesse de la connexion",
+       "À donner un nom au fichier"], b:0,
+    e:"C’est l’équivalent d’une adresse postale : sans elle, les données ne sauraient pas à quelle machine être livrées." },
+
+  { t:"reseau", q:"Un message envoyé sur internet voyage :",
+    r:["Découpé en petits paquets, qui sont réassemblés à l’arrivée",
+       "D’un seul bloc, par un fil direct entre les deux machines",
+       "En passant obligatoirement par un satellite",
+       "Sous la forme d’une feuille scannée"], b:0,
+    e:"C’est le principe d’internet : les paquets traversent plusieurs machines appelées routeurs, et si une route est coupée, ils en empruntent une autre." },
+
+  { t:"reseau", q:"À quoi sert la box internet à la maison ?",
+    r:["À relier les appareils de la maison entre eux et au reste d’internet",
+       "À stocker les photos de la famille",
+       "À produire l’électricité du Wi-Fi",
+       "À remplacer le processeur de l’ordinateur"], b:0,
+    e:"La box sert de routeur, elle aiguille les données, et de point d’accès Wi-Fi. C’est la porte d’entrée du réseau de la maison." },
+
+  { t:"reseau", q:"Un câble Ethernet (RJ45) sert à :",
+    r:["Brancher un appareil au réseau avec un fil, souvent plus stable que le Wi-Fi",
+       "Recharger un téléphone",
+       "Brancher un écran",
+       "Relier deux disques durs"], b:0,
+    e:"On le reconnaît à sa prise carrée munie d’un petit clip. La connexion y est plus rapide et plus régulière qu’en Wi-Fi." },
+
+  { t:"reseau", q:"Tu tapes « lemonde.fr » dans le navigateur. Que se passe-t-il en premier ?",
+    r:["La machine demande à un annuaire du réseau à quelle adresse IP correspond ce nom",
+       "La page est cherchée dans le disque dur de l’ordinateur",
+       "Le nom du site est envoyé tel quel à un satellite",
+       "Le moteur de recherche fabrique la page à ta place"], b:0,
+    e:"Cet annuaire s’appelle le DNS. Les machines ne se parlent qu’avec des numéros : le DNS traduit le nom écrit en lettres en adresse IP, puis ton navigateur va chercher la page sur le serveur correspondant." },
+
+  { t:"reseau", q:"À qui appartient internet ?",
+    r:["À personne en particulier : c’est un assemblage de réseaux appartenant à des milliers d’acteurs différents",
+       "À une seule grande entreprise américaine",
+       "À l’État de chaque pays, qui possède sa part",
+       "À l’inventeur du web, qui touche de l’argent à chaque visite"], b:0,
+    e:"Chaque opérateur possède ses propres câbles et machines, mais tous acceptent de suivre les mêmes règles de communication (les protocoles). C’est cet accord, et non un propriétaire, qui fait tenir l’ensemble." },
+
+  { t:"algo", q:"Qu’est-ce qu’un algorithme ?",
+    r:["Une suite d’instructions précises, exécutées dans l’ordre, pour obtenir un résultat",
+       "Un composant électronique situé dans le processeur",
+       "Un site web qui fait des calculs à ta place",
+       "Un mot de passe très compliqué"], b:0,
+    e:"Une recette de cuisine est un algorithme : des étapes, dans un ordre précis. Un programme, c’est un algorithme écrit dans un langage que la machine comprend." },
+
+  { t:"algo", q:"Dans Scratch, tu utilises le bloc « mettre [score] à 0 ». À quoi sert une variable comme « score » ?",
+    r:["À retenir une valeur qui peut changer pendant que le programme tourne",
+       "À donner un nom au projet",
+       "À afficher une image à l’écran",
+       "À ralentir le programme"], b:0,
+    e:"Une variable est une boîte étiquetée qui garde une valeur. Le bloc « ajouter (1) à [score] » augmente son contenu de 1 à chaque passage." },
+
+  { t:"algo", q:"Tu veux qu’un personnage trace les 4 côtés d’un carré. Quel bloc Scratch évite d’écrire quatre fois la même chose ?",
+    r:["« répéter (4) fois »",
+       "« si … alors »",
+       "« attendre (1) secondes »",
+       "« quand le drapeau vert pressé »"], b:0,
+    e:"C’est une boucle : elle répète les instructions placées à l’intérieur. « répéter indéfiniment » fait la même chose, mais ne s’arrête jamais toute seule." },
+
+  { t:"algo", q:"Dans Scratch, le bloc « si … alors » sert à :",
+    r:["N’exécuter les instructions qu’il contient que si la condition est vraie",
+       "Répéter les instructions un certain nombre de fois",
+       "Mettre le programme en pause",
+       "Créer une nouvelle variable"], b:0,
+    e:"C’est une condition. Avec « si … alors … sinon », le programme choisit entre deux chemins : l’un si la condition est vraie, l’autre si elle est fausse." },
+
+  { t:"algo", q:"Un script fait ceci : « mettre [score] à 0 », puis « répéter (3) fois » contenant « ajouter (2) à [score] », puis « dire (score) ». Qu’affiche le personnage ?",
+    r:["6", "2", "3", "0"], b:0,
+    e:"La variable part de 0, et la boucle lui ajoute 2 trois fois de suite : 0 + 2 + 2 + 2 = 6. Suivre un programme ligne par ligne pour prévoir son résultat, c’est ce qu’on appelle le dérouler." },
+
+  { t:"algo", q:"Dans quelle catégorie de blocs Scratch trouve-t-on « répéter (10) fois » et « si … alors » ?",
+    r:["Contrôle", "Mouvement", "Événements", "Opérateurs"], b:0,
+    e:"La catégorie Contrôle regroupe les boucles et les conditions. « mettre [ma variable] à (0) » se trouve dans Variables, et « quand le drapeau vert pressé » dans Événements." }
+];
+
+const LETTRES = ["A","B","C","D"];
+const panel = document.getElementById("panel");
+const strip = document.getElementById("strip");
+const hint  = document.getElementById("hint");
+const topTitle = document.getElementById("topTitle");
+const topCount = document.getElementById("topCount");
+
+let ordre = [], i = 0, reps = [], repondu = false;
+
+function melange(a){
+  const c = a.slice();
+  for(let k=c.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[c[k],c[j]]=[c[j],c[k]];}
+  return c;
+}
+
+function preparer(){
+  ordre = Q.map(function(q){
+    const idx = melange([0,1,2,3]);
+    return {
+      t:q.t, q:q.q, e:q.e,
+      r:idx.map(function(n){return q.r[n];}),
+      b:idx.indexOf(q.b)
+    };
+  });
+  reps = new Array(ordre.length).fill(null);
+  i = 0; repondu = false;
+}
+
+function dessinerStrip(){
+  strip.innerHTML = "";
+  ordre.forEach(function(_, n){
+    const el = document.createElement("i");
+    if(reps[n] === true) el.className = "ok";
+    else if(reps[n] === false) el.className = "no";
+    else if(n === i) el.className = "now";
+    strip.appendChild(el);
+  });
+}
+
+/* ---------- accueil ---------- */
+function accueil(){
+  topTitle.textContent = "";
+  topCount.textContent = "";
+  strip.style.display = "none";
+  hint.textContent = "";
+  panel.innerHTML =
+    '<h1>Ce que tu sais déjà sur l’ordinateur</h1>' +
+    '<p class="lead">' + Q.length + ' questions pour faire le point avant de commencer. Une seule réponse est bonne à chaque fois, et la bonne réponse s’affiche tout de suite avec une explication.</p>' +
+    '<p class="lead">Ce n’est pas noté : le but est de savoir d’où on part.</p>' +
+    '<div class="keys" style="margin:22px 0 0">' +
+      THEMES.map(function(t){
+        const n = Q.filter(function(q){return q.t===t.id;}).length;
+        return '<div class="key" style="cursor:default;box-shadow:0 4px 0 var(--bevel)">' +
+               '<span class="cap">' + n + '</span><span><b>' + t.nom + '</b><br>' +
+               '<span style="color:var(--ink-soft);font-size:.92rem">' + t.note + '</span></span></div>';
+      }).join("") +
+    '</div>' +
+    '<div class="row"><button class="bigkey wire" id="go">Commencer</button></div>';
+  document.getElementById("go").focus();
+  document.getElementById("go").onclick = function(){ preparer(); afficher(); };
+}
+
+/* ---------- question ---------- */
+function afficher(){
+  strip.style.display = "flex";
+  const item = ordre[i];
+  const theme = THEMES.find(function(t){return t.id===item.t;});
+  topTitle.textContent = theme.nom;
+  topCount.textContent = "Question " + (i+1) + " sur " + ordre.length;
+  dessinerStrip();
+  repondu = false;
+
+  panel.innerHTML =
+    '<p class="question">' + item.q + '</p>' +
+    '<div class="keys" id="keys">' +
+      item.r.map(function(txt, n){
+        return '<button class="key" data-n="' + n + '">' +
+               '<span class="cap">' + LETTRES[n] + '</span><span>' + txt + '</span></button>';
+      }).join("") +
+    '</div>' +
+    '<div id="apres"></div>';
+
+  hint.innerHTML = 'Tu peux aussi utiliser les touches <kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> du clavier.';
+
+  Array.prototype.forEach.call(panel.querySelectorAll(".key"), function(btn){
+    btn.onclick = function(){ repondre(parseInt(btn.dataset.n,10)); };
+  });
+}
+
+function repondre(n){
+  if(repondu) return;
+  repondu = true;
+  const item = ordre[i];
+  const juste = (n === item.b);
+  reps[i] = juste;
+  dessinerStrip();
+
+  Array.prototype.forEach.call(panel.querySelectorAll(".key"), function(btn){
+    const k = parseInt(btn.dataset.n,10);
+    btn.disabled = true;
+    if(k === n) btn.classList.add(juste ? "picked-ok" : "picked-no");
+    else if(k === item.b) btn.classList.add("reveal");
+    else btn.classList.add("dim");
+  });
+
+  const dernier = (i === ordre.length - 1);
+  document.getElementById("apres").innerHTML =
+    '<div class="verdict ' + (juste ? "good" : "bad") + '">' +
+      '<b>' + (juste ? "Bonne réponse" : "Réponse : " + LETTRES[item.b] + ". " + item.r[item.b]) + '</b>' +
+      '<p>' + item.e + '</p>' +
+    '</div>' +
+    '<div class="row"><button class="bigkey" id="next">' +
+      (dernier ? "Voir mon résultat" : "Question suivante") + '</button></div>';
+
+  const nx = document.getElementById("next");
+  nx.focus();
+  nx.onclick = function(){
+    if(dernier){ resultat(); } else { i++; afficher(); }
+  };
+  hint.innerHTML = 'Appuie sur <kbd>Entrée</kbd> pour continuer.';
+}
+
+/* ---------- résultat ---------- */
+function resultat(){
+  const total = ordre.length;
+  const bons = reps.filter(Boolean).length;
+
+  const parTheme = THEMES.map(function(t){
+    const idx = ordre.map(function(o,n){return o.t===t.id ? n : -1;}).filter(function(n){return n>=0;});
+    const b = idx.filter(function(n){return reps[n];}).length;
+    return { nom:t.nom, b:b, n:idx.length };
+  });
+
+  let bilan;
+  const pct = bons / total;
+  if(pct >= .84)      bilan = "Tes bases sont solides. On peut aller plus loin : comment circulent vraiment les données, et comment juger ce qu’on trouve en ligne.";
+  else if(pct >= .60) bilan = "Tu as de bonnes bases, avec quelques trous à combler. Regarde les questions ratées ci-dessous, ce sont elles qui comptent.";
+  else if(pct >= .36) bilan = "Le vocabulaire courant est là, mais le fonctionnement de la machine et du réseau reste flou. C’est exactement ce qu’on va travailler.";
+  else                bilan = "Beaucoup de notions sont encore nouvelles pour toi. Rien d’inquiétant : c’est le point de départ, pas une note.";
+
+  const rates = ordre.map(function(o,n){return reps[n] ? null : {q:o.q, r:o.r[o.b], e:o.e};})
+                     .filter(Boolean);
+
+  topTitle.textContent = "Résultat";
+  topCount.textContent = "";
+  dessinerStrip();
+  hint.textContent = "";
+
+  panel.innerHTML =
+    '<div class="score"><b>' + bons + '</b><span>bonnes réponses sur ' + total + '</span></div>' +
+    '<p class="lead" style="max-width:56ch">' + bilan + '</p>' +
+    '<div class="bars">' +
+      parTheme.map(function(t){
+        return '<div>' +
+          '<div class="bar-head"><span>' + t.nom + '</span><em>' + t.b + ' / ' + t.n + '</em></div>' +
+          '<div class="track"><div class="fill" style="width:' + Math.round(t.b/t.n*100) + '%"></div></div>' +
+        '</div>';
+      }).join("") +
+    '</div>' +
+    (rates.length
+      ? '<h2>À revoir (' + rates.length + ')</h2><ul class="misses">' +
+        rates.map(function(r){
+          return '<li><q>' + r.q + '</q><em><b>' + r.r + '</b> — ' + r.e + '</em></li>';
+        }).join("") + '</ul>'
+      : '<h2>Aucune erreur. Rien à revoir.</h2>') +
+    '<div class="row" style="gap:12px">' +
+      '<button class="bigkey" id="print">Imprimer</button>' +
+      '<button class="bigkey wire" id="again">Recommencer</button>' +
+    '</div>';
+
+  document.getElementById("again").onclick = function(){ preparer(); afficher(); };
+  document.getElementById("print").onclick = function(){ window.print(); };
+}
+
+/* ---------- clavier ---------- */
+document.addEventListener("keydown", function(ev){
+  const k = ev.key.toLowerCase();
+  if(!repondu){
+    const n = ["a","b","c","d"].indexOf(k);
+    const alt = ["1","2","3","4"].indexOf(k);
+    const choix = n >= 0 ? n : alt;
+    if(choix >= 0 && panel.querySelector(".key[data-n]")){ ev.preventDefault(); repondre(choix); }
+  } else if(k === "enter"){
+    const nx = document.getElementById("next");
+    if(nx){ ev.preventDefault(); nx.click(); }
+  }
+});
+
+accueil();
+</script>
+</body>
+</html>
