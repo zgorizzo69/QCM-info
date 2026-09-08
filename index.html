@@ -133,6 +133,10 @@
     font-size:.92rem;
   }
 
+  .sub{color:var(--ink-soft);font-size:.92rem}
+  #blocs .key{cursor:pointer}
+  #go[disabled]{cursor:default}
+
   .key.picked-ok{
     background:#E7F5EC;border-color:var(--ok);
     box-shadow:0 4px 0 var(--ok-bevel);transform:translateY(0);
@@ -246,6 +250,8 @@ const THEMES = [
   { id:"vocab",  nom:"Le vocabulaire de base", note:"Les mots qu’on utilise tous les jours devant un écran." },
   { id:"pc",     nom:"Dans l’ordinateur",      note:"Les pièces de la machine, et la façon dont elle compte." },
   { id:"reseau", nom:"Le réseau et internet",  note:"Comment les machines communiquent entre elles." },
+  { id:"prive",  nom:"Ta vie privée en ligne", note:"Ce que tu laisses derrière toi, et qui le ramasse." },
+  { id:"mdp",    nom:"Les mots de passe",      note:"Ce qui rend un mot de passe solide, ou inutile." },
   { id:"algo",   nom:"Programmer avec Scratch", note:"Instructions, variables, boucles et conditions." }
 ];
 
@@ -420,6 +426,87 @@ const Q = [
        "À l’inventeur du web, qui touche de l’argent à chaque visite"], b:0,
     e:"Chaque opérateur possède ses propres câbles et machines, mais tous acceptent de suivre les mêmes règles de communication (les protocoles). C’est cet accord, et non un propriétaire, qui fait tenir l’ensemble." },
 
+  { t:"prive", q:"Un réseau social te propose un compte entièrement gratuit. Comment l’entreprise gagne-t-elle de l’argent ?",
+    r:["En collectant tes informations et en les revendant aux annonceurs pour te cibler",
+       "Elle ne gagne rien, c’est un service offert",
+       "En vendant des ordinateurs et des téléphones",
+       "Grâce à une aide versée par l’État"], b:0,
+    e:"Quand un service est gratuit, c’est souvent toi le produit : ce qui se vend, ce sont tes données et ton attention. Une messagerie gratuite analyse tes messages, une application de jeu revend ta position." },
+
+  { t:"prive", q:"Tu t’inscris sur un jeu en ligne. Quel pseudo est le plus prudent ?",
+    r:["super courgette 3000",
+       "Lucas Martin 2013",
+       "Lucas du collège Victor Hugo",
+       "Lucas de Narbonne"], b:0,
+    e:"Un pseudonyme ne doit rien révéler de ton identité réelle : ni ton nom, ni ton âge, ni ton établissement, ni ta ville. Mis bout à bout, ces détails suffisent à te retrouver." },
+
+  { t:"prive", q:"Tu publies une photo sur un réseau social, puis tu la supprimes le lendemain. Que peut-on dire ?",
+    r:["N’importe qui a pu la copier entre-temps : rien ne garantit qu’elle a disparu",
+       "Elle est définitivement effacée de partout",
+       "Elle s’efface toute seule au bout de 24 heures",
+       "Seuls tes abonnés l’ont vue, il n’y a pas de risque"], b:0,
+    e:"Une information mise en ligne se copie instantanément, et tu n’as aucun moyen de vérifier que toutes les copies ont été supprimées. Ce qui est publié t’échappe." },
+
+  { t:"prive", q:"Sur un jeu en ligne, quelqu’un de très gentil dit avoir ton âge et te demande une photo de toi et ton adresse. Que fais-tu ?",
+    r:["Tu refuses, et tu en parles à tes parents ou à un adulte de confiance",
+       "Tu acceptes, puisqu’il a le même âge que toi",
+       "Tu envoies seulement la photo, l’adresse c’est plus grave",
+       "Tu demandes d’abord une photo de lui pour vérifier"], b:0,
+    e:"Sur internet, personne ne peut prouver qu’il est bien celui qu’il prétend être : une photo se copie, un âge s’invente. Toute demande de photo, d’adresse ou de rencontre est un signal d’alerte, et il faut en parler à un adulte." },
+
+  { t:"prive", q:"Quelqu’un t’écrit qu’il est ton oncle, et te donne son prénom et sa date de naissance, exacts. Est-ce une preuve ?",
+    r:["Non : ces informations se trouvent facilement sur les réseaux sociaux",
+       "Oui, personne d’autre ne peut connaître ces détails",
+       "Oui, s’il connaît aussi ton prénom",
+       "Oui, si sa photo de profil lui ressemble"], b:0,
+    e:"Connaître des détails sur ta famille ne prouve rien : ils se récupèrent dans les publications de tes proches. En cas de doute, vérifie autrement, par téléphone ou en demandant à tes parents." },
+
+  { t:"prive", q:"Ce que tu publies aujourd’hui, à 12 ans :",
+    r:["Peut ressortir dans dix ou vingt ans, car c’est très difficile à effacer",
+       "S’efface automatiquement quand tu deviens majeur",
+       "N’a aucune importance, personne ne s’en souviendra",
+       "Reste visible uniquement par tes abonnés du moment"], b:0,
+    e:"Une blague écrite aujourd’hui peut être retrouvée bien plus tard, par un futur employeur par exemple. C’est ce qu’on appelle la trace numérique : elle se construit sans qu’on y pense." },
+
+  { t:"prive", q:"Un jeu gratuit sur smartphone demande l’accès à ta position. Pourquoi, le plus souvent ?",
+    r:["Parce que savoir où tu es a de la valeur pour la publicité, alors que le jeu n’en a pas besoin",
+       "Parce que le jeu fonctionnera plus vite",
+       "Parce que c’est obligatoire pour toutes les applications",
+       "Pour retrouver ton téléphone en cas de vol"], b:0,
+    e:"Avant d’accepter une autorisation, demande-toi si le service en a vraiment besoin pour fonctionner. Un jeu de puzzle n’a aucune raison de connaître ta position, ni tes contacts, ni ton micro." },
+
+  { t:"mdp", q:"Parmi ces mots de passe, lequel est le plus solide ?",
+    r:["Kiwi7!Tracteur-Bleu92", "14032013", "motdepasse", "Lucas2013"], b:0,
+    e:"Un bon mot de passe est d’abord long, mélange lettres, chiffres et caractères spéciaux, et ne contient aucune information devinable sur toi." },
+
+  { t:"mdp", q:"Pourquoi ta date de naissance est-elle un très mauvais mot de passe ?",
+    r:["Parce qu’elle est courte et qu’on la trouve souvent sur les réseaux sociaux",
+       "Parce qu’elle contient des chiffres",
+       "Parce qu’elle change tous les ans",
+       "Parce qu’elle est trop longue à taper"], b:0,
+    e:"Tout ce qu’on peut apprendre sur toi en ligne — date de naissance, prénom du chien, équipe favorite — fait partie des toutes premières choses essayées. Un mot de passe ne doit jamais parler de toi." },
+
+  { t:"mdp", q:"Qu’est-ce qui rend surtout un mot de passe difficile à deviner ?",
+    r:["Sa longueur, complétée par un mélange de lettres, de chiffres et de caractères spéciaux",
+       "Le fait de le changer tous les jours",
+       "Le fait d’y mettre au moins une majuscule",
+       "Le fait de l’écrire à l’envers"], b:0,
+    e:"Chaque caractère ajouté multiplie le nombre de combinaisons possibles. Un mot de passe court reste faible même avec une majuscule et un point d’exclamation." },
+
+  { t:"mdp", q:"Tu utilises le même mot de passe pour ta messagerie, ton jeu préféré et un forum. Quel est le risque ?",
+    r:["Si un seul de ces sites se fait pirater, tous tes autres comptes tombent aussi",
+       "Aucun, c’est simplement plus pratique",
+       "Tes comptes deviendront plus lents",
+       "Tu ne pourras plus jamais le changer"], b:0,
+    e:"Les sites se font régulièrement voler leurs listes de mots de passe. Un mot de passe différent par compte évite l’effet domino." },
+
+  { t:"mdp", q:"Un ami te demande ton mot de passe pour t’aider à passer un niveau. Que fais-tu ?",
+    r:["Tu refuses : un mot de passe ne se prête pas, même à un ami",
+       "Tu le donnes, puisque c’est un ami",
+       "Tu le donnes, puis tu le changes le lendemain",
+       "Tu le donnes en enlevant le dernier caractère"], b:0,
+    e:"Prêter son mot de passe, c’est donner accès à tout le compte — messages, achats, contacts — et tu restes responsable de ce qui s’y passe ensuite." },
+
   { t:"algo", q:"Qu’est-ce qu’un algorithme ?",
     r:["Une suite d’instructions précises, exécutées dans l’ordre, pour obtenir un résultat",
        "Un composant électronique situé dans le processeur",
@@ -465,6 +552,7 @@ const topTitle = document.getElementById("topTitle");
 const topCount = document.getElementById("topCount");
 
 let ordre = [], i = 0, reps = [], repondu = false;
+const choisis = new Set(THEMES.map(function(t){return t.id;}));
 
 function melange(a){
   const c = a.slice();
@@ -473,7 +561,7 @@ function melange(a){
 }
 
 function preparer(){
-  ordre = Q.map(function(q){
+  ordre = Q.filter(function(q){return choisis.has(q.t);}).map(function(q){
     const idx = melange([0,1,2,3]);
     return {
       t:q.t, q:q.q, e:q.e,
@@ -501,21 +589,43 @@ function accueil(){
   topTitle.textContent = "";
   topCount.textContent = "";
   strip.style.display = "none";
-  hint.textContent = "";
+  hint.innerHTML = "Chaque bloc peut être passé séparément : clique dessus pour l’activer ou le désactiver.";
   panel.innerHTML =
     '<h1>Ce que tu sais déjà sur l’ordinateur</h1>' +
-    '<p class="lead">' + Q.length + ' questions pour faire le point avant de commencer. Une seule réponse est bonne à chaque fois, et la bonne réponse s’affiche tout de suite avec une explication.</p>' +
-    '<p class="lead">Ce n’est pas noté : le but est de savoir d’où on part.</p>' +
-    '<div class="keys" style="margin:22px 0 0">' +
+    '<p class="lead">Une seule réponse est bonne à chaque fois. La bonne réponse s’affiche aussitôt, avec une explication.</p>' +
+    '<p class="lead">Choisis les blocs à passer, puis clique sur Commencer. Ce n’est pas noté : le but est de savoir d’où on part.</p>' +
+    '<div class="keys" style="margin:22px 0 0" id="blocs">' +
       THEMES.map(function(t){
         const n = Q.filter(function(q){return q.t===t.id;}).length;
-        return '<div class="key" style="cursor:default;box-shadow:0 4px 0 var(--bevel)">' +
+        const on = choisis.has(t.id);
+        return '<button class="key' + (on ? " picked-ok" : " dim") + '" data-t="' + t.id + '" aria-pressed="' + on + '">' +
                '<span class="cap">' + n + '</span><span><b>' + t.nom + '</b><br>' +
-               '<span style="color:var(--ink-soft);font-size:.92rem">' + t.note + '</span></span></div>';
+               '<span class="sub">' + t.note + '</span></span></button>';
       }).join("") +
     '</div>' +
-    '<div class="row"><button class="bigkey wire" id="go">Commencer</button></div>';
-  document.getElementById("go").focus();
+    '<div class="row"><button class="bigkey wire" id="go"></button></div>';
+
+  function maj(){
+    const n = Q.filter(function(q){return choisis.has(q.t);}).length;
+    const go = document.getElementById("go");
+    go.textContent = n ? "Commencer — " + n + " questions" : "Choisis au moins un bloc";
+    go.disabled = !n;
+    go.style.opacity = n ? "1" : ".45";
+  }
+
+  Array.prototype.forEach.call(panel.querySelectorAll("#blocs .key"), function(btn){
+    btn.onclick = function(){
+      const id = btn.dataset.t;
+      if(choisis.has(id)) choisis.delete(id); else choisis.add(id);
+      const on = choisis.has(id);
+      btn.classList.toggle("picked-ok", on);
+      btn.classList.toggle("dim", !on);
+      btn.setAttribute("aria-pressed", on);
+      maj();
+    };
+  });
+
+  maj();
   document.getElementById("go").onclick = function(){ preparer(); afficher(); };
 }
 
@@ -584,7 +694,9 @@ function resultat(){
   const total = ordre.length;
   const bons = reps.filter(Boolean).length;
 
-  const parTheme = THEMES.map(function(t){
+  const parTheme = THEMES.filter(function(t){
+    return ordre.some(function(o){return o.t===t.id;});
+  }).map(function(t){
     const idx = ordre.map(function(o,n){return o.t===t.id ? n : -1;}).filter(function(n){return n>=0;});
     const b = idx.filter(function(n){return reps[n];}).length;
     return { nom:t.nom, b:b, n:idx.length };
