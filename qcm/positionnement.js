@@ -1,0 +1,327 @@
+/* QCM de positionnement : ce que l’élève sait déjà sur l’ordinateur. */
+QCM.ajouter({
+  id: "positionnement",
+  titre: "Ce que tu sais déjà sur l’ordinateur",
+  resume: "Vocabulaire, matériel, réseau, vie privée, mots de passe et Scratch : un état des lieux pour savoir d’où on part.",
+  intro: [
+    "Une seule réponse est bonne à chaque fois. La bonne réponse s’affiche aussitôt, avec une explication.",
+    "Choisis les blocs à passer, puis clique sur Commencer. Ce n’est pas noté : le but est de savoir d’où on part."
+  ],
+
+  themes: [
+    { id:"vocab", nom:"Le vocabulaire de base", note:"Les mots qu’on utilise tous les jours devant un écran." },
+    { id:"pc", nom:"Dans l’ordinateur", note:"Les pièces de la machine, et la façon dont elle compte." },
+    { id:"reseau", nom:"Le réseau et internet", note:"Comment les machines communiquent entre elles." },
+    { id:"prive", nom:"Ta vie privée en ligne", note:"Ce que tu laisses derrière toi, et qui le ramasse." },
+    { id:"mdp", nom:"Les mots de passe", note:"Ce qui rend un mot de passe solide, ou inutile." },
+    { id:"algo", nom:"Programmer avec Scratch", note:"Instructions, variables, boucles et conditions." }
+  ],
+
+  // Chaque question garde un identifiant stable : c’est lui qui est enregistré dans la session.
+  // La bonne réponse est l’indice b dans r ; l’ordre des réponses est mélangé à l’affichage.
+  questions: [
+    { id:"vocab-1", t:"vocab", q:"À quoi sert une imprimante ?",
+      r:["Mettre sur papier un document affiché à l’écran",
+         "Copier un document papier dans l’ordinateur",
+         "Agrandir l’image de l’écran",
+         "Protéger l’ordinateur des virus"], b:0,
+      e:"Elle transforme un fichier en feuille de papier. L’appareil qui fait l’inverse, du papier vers l’ordinateur, s’appelle un scanner." },
+
+    { id:"vocab-2", t:"vocab", q:"La souris permet surtout de :",
+      r:["Déplacer le pointeur et cliquer sur ce qu’on veut",
+         "Écrire du texte",
+         "Régler le volume du son",
+         "Se connecter au Wi-Fi"], b:0,
+      e:"Pour écrire, c’est le clavier. La souris déplace le pointeur (le curseur) et sert à cliquer." },
+
+    { id:"vocab-3", t:"vocab", q:"Un logiciel, c’est :",
+      r:["Un programme installé sur la machine, qui sert à faire quelque chose",
+         "Une pièce électronique à l’intérieur du boîtier",
+         "Le câble qui relie l’écran",
+         "Un autre nom pour l’écran tactile"], b:0,
+      e:"Un logiciel (ou une application) est fait de code, pas de métal. Tout ce qu’on peut toucher, c’est le matériel." },
+
+    { id:"vocab-4", t:"vocab", q:"Lequel de ces appareils est un périphérique de sortie, c’est-à-dire qu’il donne une information à l’utilisateur ?",
+      r:["L’imprimante", "Le clavier", "La webcam", "Le microphone"], b:0,
+      e:"Entrée : on donne une information à l’ordinateur (clavier, souris, micro, webcam). Sortie : l’ordinateur nous donne une information (écran, haut-parleur, imprimante)." },
+
+    { id:"vocab-5", t:"vocab", q:"Comment appelle-t-on l’endroit où on range et classe ses fichiers ?",
+      r:["Un dossier", "Un onglet", "Un pilote", "Un raccourci"], b:0,
+      e:"Un dossier (ou répertoire) contient des fichiers et d’autres dossiers, comme une pochette dans un classeur." },
+
+    { id:"vocab-6", t:"vocab", q:"Windows, macOS et Linux sont :",
+      r:["Des systèmes d’exploitation",
+         "Des navigateurs internet",
+         "Des antivirus",
+         "Des marques d’écran"], b:0,
+      e:"Le système d’exploitation est le logiciel principal : il fait fonctionner la machine et permet de lancer tous les autres logiciels." },
+
+    { id:"vocab-7", t:"vocab", q:"Tu travailles sur un texte et tu cliques sur « Enregistrer ». Que se passe-t-il ?",
+      r:["Le document est écrit dans la mémoire de stockage, pour être retrouvé plus tard",
+         "Le document part directement à l’imprimante",
+         "Le document est publié sur internet",
+         "Le document est fermé et effacé"], b:0,
+      e:"Tant qu’on n’a pas enregistré, le travail n’existe que dans la mémoire vive : il disparaît si l’ordinateur s’éteint." },
+
+    { id:"vocab-8", t:"vocab", q:"Un fichier s’appelle « vacances.jpg ». Que contient-il très probablement ?",
+      r:["Une photo", "Une chanson", "Une vidéo", "Un tableau de nombres"], b:0,
+      e:"Les lettres après le point (l’extension) annoncent le type de fichier : .jpg et .png pour les images, .mp3 pour le son, .mp4 pour la vidéo, .pdf pour un document." },
+
+    { id:"pc-1", t:"pc", q:"Quel composant fait les calculs et dirige tout le reste de la machine ?",
+      r:["Le processeur", "Le disque dur", "L’alimentation", "L’écran"], b:0,
+      e:"Le processeur (CPU) est le chef d’orchestre : il exécute les instructions des logiciels, des milliards de fois par seconde." },
+
+    { id:"pc-2", t:"pc", q:"Tu éteins l’ordinateur. Où tes fichiers restent-ils conservés ?",
+      r:["Sur le disque dur ou le SSD",
+         "Dans la mémoire vive (RAM)",
+         "Dans le processeur",
+         "Dans le câble d’alimentation"], b:0,
+      e:"Le disque dur ou le SSD garde les données même sans électricité. La mémoire vive, elle, se vide entièrement à l’extinction." },
+
+    { id:"pc-3", t:"pc", q:"À quoi sert la mémoire vive (RAM) ?",
+      r:["À garder sous la main les données des programmes en train de tourner",
+         "À conserver les fichiers pour toujours",
+         "À afficher l’image sur l’écran",
+         "À se connecter à internet"], b:0,
+      e:"C’est une mémoire très rapide mais temporaire. Plus il y en a, plus on peut faire tourner de programmes en même temps sans ralentir." },
+
+    { id:"pc-4", t:"pc", q:"Sur quelle grande carte tous les composants viennent-ils se brancher ?",
+      r:["La carte mère", "La carte graphique", "La carte SD", "La carte son"], b:0,
+      e:"La carte mère relie tout : processeur, mémoire, stockage, ports USB. C’est la colonne vertébrale de la machine." },
+
+    { id:"pc-5", t:"pc", q:"La carte graphique sert à :",
+      r:["Calculer les images affichées à l’écran",
+         "Stocker les photos",
+         "Refroidir le processeur",
+         "Brancher le clavier"], b:0,
+      e:"Elle est très sollicitée par les jeux vidéo et le montage vidéo, qui demandent d’afficher beaucoup d’images par seconde." },
+
+    { id:"pc-6", t:"pc", q:"Quelle est la plus grande capacité de stockage ?",
+      r:["1 To", "900 Go", "5 000 Mo", "100 000 Ko"], b:0,
+      e:"L’ordre de grandeur est : Ko, puis Mo, puis Go, puis To. 1 To vaut environ 1 000 Go, c’est donc de loin le plus grand." },
+
+    { id:"pc-7", t:"pc", q:"Lequel de ces éléments se trouve à l’intérieur de l’unité centrale ?",
+      r:["L’alimentation", "L’écran", "La souris", "L’imprimante"], b:0,
+      e:"L’unité centrale contient la carte mère, le processeur, la mémoire, le stockage et l’alimentation. Le reste est branché autour : ce sont les périphériques." },
+
+    { id:"pc-8", t:"pc", q:"À quoi servent les ventilateurs dans un ordinateur ?",
+      r:["À évacuer la chaleur produite par les composants",
+         "À faire circuler l’électricité",
+         "À rendre l’ordinateur plus silencieux",
+         "À aspirer la poussière"], b:0,
+      e:"Les composants chauffent quand ils travaillent. S’ils chauffent trop, ils ralentissent ou s’abîment : les ventilateurs et les radiateurs évacuent cette chaleur." },
+
+    { id:"pc-9", t:"pc", q:"À l’intérieur, un ordinateur ne manipule que des 0 et des 1. Pourquoi ?",
+      r:["Parce que ses circuits ne savent distinguer que deux états : le courant passe, ou il ne passe pas",
+         "Parce que c’est plus rapide à taper au clavier",
+         "Parce que les autres chiffres prennent trop de place sur le disque dur",
+         "Parce que c’est le seul langage que les humains comprennent"], b:0,
+      e:"Chaque 0 ou 1 s’appelle un bit. Texte, images, sons : tout est traduit en suites de bits, parce que c’est la seule chose que l’électronique sait représenter de façon sûre." },
+
+    { id:"pc-10", t:"pc", q:"Le nombre 101, écrit en binaire, vaut :",
+      r:["5", "3", "11", "101"], b:0,
+      e:"En binaire chaque position vaut le double de la précédente : 4, 2, 1. Ici on a un 4, pas de 2, et un 1, donc 4 + 1 = 5." },
+
+    { id:"reseau-1", t:"reseau", q:"Internet, c’est :",
+      r:["Un immense réseau qui relie des millions de machines dans le monde",
+         "Un logiciel installé sur l’ordinateur",
+         "Un site web très connu",
+         "Une marque de matériel informatique"], b:0,
+      e:"Internet est le réseau lui-même : des câbles, des antennes et des machines. Le Web, c’est-à-dire les sites, n’est qu’une des choses qui circulent dessus." },
+
+    { id:"reseau-2", t:"reseau", q:"Le Wi-Fi permet de :",
+      r:["Relier un appareil au réseau sans câble, grâce à des ondes radio",
+         "Rendre la connexion plus rapide que partout ailleurs",
+         "Stocker des fichiers dans les airs",
+         "Alimenter l’appareil en électricité"], b:0,
+      e:"Le Wi-Fi ne remplace pas internet : c’est seulement le moyen d’atteindre la box sans fil, sur quelques dizaines de mètres." },
+
+    { id:"reseau-3", t:"reseau", q:"Firefox, Chrome, Safari et Edge sont :",
+      r:["Des navigateurs",
+         "Des moteurs de recherche",
+         "Des systèmes d’exploitation",
+         "Des réseaux sociaux"], b:0,
+      e:"Le navigateur est le logiciel qui affiche les pages web. C’est la fenêtre par laquelle on regarde le web." },
+
+    { id:"reseau-4", t:"reseau", q:"Google, Bing, Qwant et DuckDuckGo sont :",
+      r:["Des moteurs de recherche, qu’on utilise dans un navigateur",
+         "Des navigateurs",
+         "Des systèmes d’exploitation",
+         "Des types de câbles réseau"], b:0,
+      e:"Un moteur de recherche est un service qui cherche des pages à ta place. Il ne faut pas le confondre avec le navigateur, qui est le logiciel dans lequel on l’ouvre." },
+
+    { id:"reseau-5", t:"reseau", q:"Tu regardes une vidéo en ligne. D’où viennent les images ?",
+      r:["D’un serveur : un ordinateur distant, allumé en permanence, qui te les envoie",
+         "Des ondes Wi-Fi, qui les fabriquent",
+         "Du disque dur de ton ordinateur",
+         "De la carte graphique de ton ordinateur"], b:0,
+      e:"Un serveur est un ordinateur qui rend un service aux autres. Ta machine joue le rôle de client : elle demande, le serveur répond." },
+
+    { id:"reseau-6", t:"reseau", q:"À quoi sert une adresse IP ?",
+      r:["À identifier un appareil sur le réseau, pour savoir où envoyer les données",
+         "À protéger l’ordinateur des virus",
+         "À mesurer la vitesse de la connexion",
+         "À donner un nom au fichier"], b:0,
+      e:"C’est l’équivalent d’une adresse postale : sans elle, les données ne sauraient pas à quelle machine être livrées." },
+
+    { id:"reseau-7", t:"reseau", q:"Un message envoyé sur internet voyage :",
+      r:["Découpé en petits paquets, qui sont réassemblés à l’arrivée",
+         "D’un seul bloc, par un fil direct entre les deux machines",
+         "En passant obligatoirement par un satellite",
+         "Sous la forme d’une feuille scannée"], b:0,
+      e:"C’est le principe d’internet : les paquets traversent plusieurs machines appelées routeurs, et si une route est coupée, ils en empruntent une autre." },
+
+    { id:"reseau-8", t:"reseau", q:"À quoi sert la box internet à la maison ?",
+      r:["À relier les appareils de la maison entre eux et au reste d’internet",
+         "À stocker les photos de la famille",
+         "À produire l’électricité du Wi-Fi",
+         "À remplacer le processeur de l’ordinateur"], b:0,
+      e:"La box sert de routeur, elle aiguille les données, et de point d’accès Wi-Fi. C’est la porte d’entrée du réseau de la maison." },
+
+    { id:"reseau-9", t:"reseau", q:"Un câble Ethernet (RJ45) sert à :",
+      r:["Brancher un appareil au réseau avec un fil, souvent plus stable que le Wi-Fi",
+         "Recharger un téléphone",
+         "Brancher un écran",
+         "Relier deux disques durs"], b:0,
+      e:"On le reconnaît à sa prise carrée munie d’un petit clip. La connexion y est plus rapide et plus régulière qu’en Wi-Fi." },
+
+    { id:"reseau-10", t:"reseau", q:"Tu tapes « lemonde.fr » dans le navigateur. Que se passe-t-il en premier ?",
+      r:["La machine demande à un annuaire du réseau à quelle adresse IP correspond ce nom",
+         "La page est cherchée dans le disque dur de l’ordinateur",
+         "Le nom du site est envoyé tel quel à un satellite",
+         "Le moteur de recherche fabrique la page à ta place"], b:0,
+      e:"Cet annuaire s’appelle le DNS. Les machines ne se parlent qu’avec des numéros : le DNS traduit le nom écrit en lettres en adresse IP, puis ton navigateur va chercher la page sur le serveur correspondant." },
+
+    { id:"reseau-11", t:"reseau", q:"À qui appartient internet ?",
+      r:["À personne en particulier : c’est un assemblage de réseaux appartenant à des milliers d’acteurs différents",
+         "À une seule grande entreprise américaine",
+         "À l’État de chaque pays, qui possède sa part",
+         "À l’inventeur du web, qui touche de l’argent à chaque visite"], b:0,
+      e:"Chaque opérateur possède ses propres câbles et machines, mais tous acceptent de suivre les mêmes règles de communication (les protocoles). C’est cet accord, et non un propriétaire, qui fait tenir l’ensemble." },
+
+    { id:"prive-1", t:"prive", q:"Un réseau social te propose un compte entièrement gratuit. Comment l’entreprise gagne-t-elle de l’argent ?",
+      r:["En collectant tes informations et en les revendant aux annonceurs pour te cibler",
+         "Elle ne gagne rien, c’est un service offert",
+         "En vendant des ordinateurs et des téléphones",
+         "Grâce à une aide versée par l’État"], b:0,
+      e:"Quand un service est gratuit, c’est souvent toi le produit : ce qui se vend, ce sont tes données et ton attention. Une messagerie gratuite analyse tes messages, une application de jeu revend ta position." },
+
+    { id:"prive-2", t:"prive", q:"Tu t’inscris sur un jeu en ligne. Quel pseudo est le plus prudent ?",
+      r:["super courgette 3000",
+         "Lucas Martin 2013",
+         "Lucas du collège Victor Hugo",
+         "Lucas de Narbonne"], b:0,
+      e:"Un pseudonyme ne doit rien révéler de ton identité réelle : ni ton nom, ni ton âge, ni ton établissement, ni ta ville. Mis bout à bout, ces détails suffisent à te retrouver." },
+
+    { id:"prive-3", t:"prive", q:"Tu publies une photo sur un réseau social, puis tu la supprimes le lendemain. Que peut-on dire ?",
+      r:["N’importe qui a pu la copier entre-temps : rien ne garantit qu’elle a disparu",
+         "Elle est définitivement effacée de partout",
+         "Elle s’efface toute seule au bout de 24 heures",
+         "Seuls tes abonnés l’ont vue, il n’y a pas de risque"], b:0,
+      e:"Une information mise en ligne se copie instantanément, et tu n’as aucun moyen de vérifier que toutes les copies ont été supprimées. Ce qui est publié t’échappe." },
+
+    { id:"prive-4", t:"prive", q:"Sur un jeu en ligne, quelqu’un de très gentil dit avoir ton âge et te demande une photo de toi et ton adresse. Que fais-tu ?",
+      r:["Tu refuses, et tu en parles à tes parents ou à un adulte de confiance",
+         "Tu acceptes, puisqu’il a le même âge que toi",
+         "Tu envoies seulement la photo, l’adresse c’est plus grave",
+         "Tu demandes d’abord une photo de lui pour vérifier"], b:0,
+      e:"Sur internet, personne ne peut prouver qu’il est bien celui qu’il prétend être : une photo se copie, un âge s’invente. Toute demande de photo, d’adresse ou de rencontre est un signal d’alerte, et il faut en parler à un adulte." },
+
+    { id:"prive-5", t:"prive", q:"Quelqu’un t’écrit qu’il est ton oncle, et te donne son prénom et sa date de naissance, exacts. Est-ce une preuve ?",
+      r:["Non : ces informations se trouvent facilement sur les réseaux sociaux",
+         "Oui, personne d’autre ne peut connaître ces détails",
+         "Oui, s’il connaît aussi ton prénom",
+         "Oui, si sa photo de profil lui ressemble"], b:0,
+      e:"Connaître des détails sur ta famille ne prouve rien : ils se récupèrent dans les publications de tes proches. En cas de doute, vérifie autrement, par téléphone ou en demandant à tes parents." },
+
+    { id:"prive-6", t:"prive", q:"Ce que tu publies aujourd’hui, à 12 ans :",
+      r:["Peut ressortir dans dix ou vingt ans, car c’est très difficile à effacer",
+         "S’efface automatiquement quand tu deviens majeur",
+         "N’a aucune importance, personne ne s’en souviendra",
+         "Reste visible uniquement par tes abonnés du moment"], b:0,
+      e:"Une blague écrite aujourd’hui peut être retrouvée bien plus tard, par un futur employeur par exemple. C’est ce qu’on appelle la trace numérique : elle se construit sans qu’on y pense." },
+
+    { id:"prive-7", t:"prive", q:"Un jeu gratuit sur smartphone demande l’accès à ta position. Pourquoi, le plus souvent ?",
+      r:["Parce que savoir où tu es a de la valeur pour la publicité, alors que le jeu n’en a pas besoin",
+         "Parce que le jeu fonctionnera plus vite",
+         "Parce que c’est obligatoire pour toutes les applications",
+         "Pour retrouver ton téléphone en cas de vol"], b:0,
+      e:"Avant d’accepter une autorisation, demande-toi si le service en a vraiment besoin pour fonctionner. Un jeu de puzzle n’a aucune raison de connaître ta position, ni tes contacts, ni ton micro." },
+
+    { id:"mdp-1", t:"mdp", q:"Parmi ces mots de passe, lequel est le plus solide ?",
+      r:["Kiwi7!Tracteur-Bleu92", "14032013", "motdepasse", "Lucas2013"], b:0,
+      e:"Un bon mot de passe est d’abord long, mélange lettres, chiffres et caractères spéciaux, et ne contient aucune information devinable sur toi." },
+
+    { id:"mdp-2", t:"mdp", q:"Pourquoi ta date de naissance est-elle un très mauvais mot de passe ?",
+      r:["Parce qu’elle est courte et qu’on la trouve souvent sur les réseaux sociaux",
+         "Parce qu’elle contient des chiffres",
+         "Parce qu’elle change tous les ans",
+         "Parce qu’elle est trop longue à taper"], b:0,
+      e:"Tout ce qu’on peut apprendre sur toi en ligne — date de naissance, prénom du chien, équipe favorite — fait partie des toutes premières choses essayées. Un mot de passe ne doit jamais parler de toi." },
+
+    { id:"mdp-3", t:"mdp", q:"Qu’est-ce qui rend surtout un mot de passe difficile à deviner ?",
+      r:["Sa longueur, complétée par un mélange de lettres, de chiffres et de caractères spéciaux",
+         "Le fait de le changer tous les jours",
+         "Le fait d’y mettre au moins une majuscule",
+         "Le fait de l’écrire à l’envers"], b:0,
+      e:"Chaque caractère ajouté multiplie le nombre de combinaisons possibles. Un mot de passe court reste faible même avec une majuscule et un point d’exclamation." },
+
+    { id:"mdp-4", t:"mdp", q:"Tu utilises le même mot de passe pour ta messagerie, ton jeu préféré et un forum. Quel est le risque ?",
+      r:["Si un seul de ces sites se fait pirater, tous tes autres comptes tombent aussi",
+         "Aucun, c’est simplement plus pratique",
+         "Tes comptes deviendront plus lents",
+         "Tu ne pourras plus jamais le changer"], b:0,
+      e:"Les sites se font régulièrement voler leurs listes de mots de passe. Un mot de passe différent par compte évite l’effet domino." },
+
+    { id:"mdp-5", t:"mdp", q:"Un ami te demande ton mot de passe pour t’aider à passer un niveau. Que fais-tu ?",
+      r:["Tu refuses : un mot de passe ne se prête pas, même à un ami",
+         "Tu le donnes, puisque c’est un ami",
+         "Tu le donnes, puis tu le changes le lendemain",
+         "Tu le donnes en enlevant le dernier caractère"], b:0,
+      e:"Prêter son mot de passe, c’est donner accès à tout le compte — messages, achats, contacts — et tu restes responsable de ce qui s’y passe ensuite." },
+
+    { id:"algo-1", t:"algo", q:"Qu’est-ce qu’un algorithme ?",
+      r:["Une suite d’instructions précises, exécutées dans l’ordre, pour obtenir un résultat",
+         "Un composant électronique situé dans le processeur",
+         "Un site web qui fait des calculs à ta place",
+         "Un mot de passe très compliqué"], b:0,
+      e:"Une recette de cuisine est un algorithme : des étapes, dans un ordre précis. Un programme, c’est un algorithme écrit dans un langage que la machine comprend." },
+
+    { id:"algo-2", t:"algo", q:"Dans Scratch, tu utilises le bloc « mettre [score] à 0 ». À quoi sert une variable comme « score » ?",
+      r:["À retenir une valeur qui peut changer pendant que le programme tourne",
+         "À donner un nom au projet",
+         "À afficher une image à l’écran",
+         "À ralentir le programme"], b:0,
+      e:"Une variable est une boîte étiquetée qui garde une valeur. Le bloc « ajouter (1) à [score] » augmente son contenu de 1 à chaque passage." },
+
+    { id:"algo-3", t:"algo", q:"Tu veux qu’un personnage trace les 4 côtés d’un carré. Quel bloc Scratch évite d’écrire quatre fois la même chose ?",
+      r:["« répéter (4) fois »",
+         "« si … alors »",
+         "« attendre (1) secondes »",
+         "« quand le drapeau vert pressé »"], b:0,
+      e:"C’est une boucle : elle répète les instructions placées à l’intérieur. « répéter indéfiniment » fait la même chose, mais ne s’arrête jamais toute seule." },
+
+    { id:"algo-4", t:"algo", q:"Dans Scratch, le bloc « si … alors » sert à :",
+      r:["N’exécuter les instructions qu’il contient que si la condition est vraie",
+         "Répéter les instructions un certain nombre de fois",
+         "Mettre le programme en pause",
+         "Créer une nouvelle variable"], b:0,
+      e:"C’est une condition. Avec « si … alors … sinon », le programme choisit entre deux chemins : l’un si la condition est vraie, l’autre si elle est fausse." },
+
+    { id:"algo-5", t:"algo", q:"Un script fait ceci : « mettre [score] à 0 », puis « répéter (3) fois » contenant « ajouter (2) à [score] », puis « dire (score) ». Qu’affiche le personnage ?",
+      r:["6", "2", "3", "0"], b:0,
+      e:"La variable part de 0, et la boucle lui ajoute 2 trois fois de suite : 0 + 2 + 2 + 2 = 6. Suivre un programme ligne par ligne pour prévoir son résultat, c’est ce qu’on appelle le dérouler." },
+
+    { id:"algo-6", t:"algo", q:"Dans quelle catégorie de blocs Scratch trouve-t-on « répéter (10) fois » et « si … alors » ?",
+      r:["Contrôle", "Mouvement", "Événements", "Opérateurs"], b:0,
+      e:"La catégorie Contrôle regroupe les boucles et les conditions. « mettre [ma variable] à (0) » se trouve dans Variables, et « quand le drapeau vert pressé » dans Événements." }
+  ],
+
+  // Message de bilan selon la part de bonnes réponses (le premier seuil atteint l’emporte).
+  bilans: [
+    { min:.84, texte:"Tes bases sont solides. On peut aller plus loin : comment circulent vraiment les données, et comment juger ce qu’on trouve en ligne." },
+    { min:.60, texte:"Tu as de bonnes bases, avec quelques trous à combler. Regarde les questions ratées ci-dessous, ce sont elles qui comptent." },
+    { min:.36, texte:"Le vocabulaire courant est là, mais le fonctionnement de la machine et du réseau reste flou. C’est exactement ce qu’on va travailler." },
+    { min:0,   texte:"Beaucoup de notions sont encore nouvelles pour toi. Rien d’inquiétant : c’est le point de départ, pas une note." }
+  ]
+});
