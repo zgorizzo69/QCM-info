@@ -18,6 +18,11 @@ function esc(s){
   });
 }
 
+// Texte des QCM : échappé, puis `code` → <code> et **gras** → <b>.
+function fmt(s){
+  return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+}
+
 function quand(iso){
   const d = new Date(iso);
   return d.toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }) +
@@ -48,8 +53,10 @@ function resoudre(def, t){
   return t.ordre.map(function(o){
     const q = def.question(o.q);
     if(!q) return null;
+    const type = q.type || "choix";
+    if(type !== "choix") return { id:q.id, t:q.t, type:type, q:q.q, e:q.e, src:q };
     const p = (Array.isArray(o.p) && o.p.length === q.r.length) ? o.p : melange(q.r.map(function(_, n){return n;}));
-    return { id:q.id, t:q.t, q:q.q, e:q.e, p:p,
+    return { id:q.id, t:q.t, type:type, q:q.q, e:q.e, src:q, p:p,
              r:p.map(function(n){return q.r[n];}),
              b:p.indexOf(q.b) };
   }).filter(Boolean);
@@ -59,19 +66,36 @@ function reponseDe(t, qid){
   return t.reponses.find(function(r){return r.q === qid;});
 }
 
+// Une leçon se lit mais ne se note pas.
+function note(o){ return o.type !== "lecon"; }
+
+// etapes / faites : avancement (leçons comprises) ; total / bons : score.
 function bilanDe(t){
   const def = QCM.trouver(t.qcm);
   const items = resoudre(def, t);
-  const faites = items.filter(function(o){return reponseDe(t, o.id);});
+  const notes = items.filter(note);
   return {
-    total: items.length,
-    faites: faites.length,
-    bons: faites.filter(function(o){return reponseDe(t, o.id).juste;}).length
+    etapes: items.length,
+    faites: items.filter(function(o){return reponseDe(t, o.id);}).length,
+    total: notes.length,
+    bons: notes.filter(function(o){const r = reponseDe(t, o.id); return r && r.juste;}).length
   };
 }
 
+function compte(def, n){
+  const mot = def.avecLecons ? "étape" : "question";
+  return n + " " + mot + (n > 1 ? "s" : "");
+}
+
+// Une tentative dont plus aucune question n’existe (QCM retiré ou réécrit) est ignorée,
+// mais reste dans la session et dans ses exports.
+function utilisable(t){
+  const def = QCM.trouver(t.qcm);
+  return !!def && t.ordre.some(function(o){return def.question(o.q);});
+}
+
 function tentativesDe(s, idQcm){
-  return s.tentatives.filter(function(t){return t.qcm === idQcm;});
+  return s.tentatives.filter(function(t){return t.qcm === idQcm && utilisable(t);});
 }
 
 function enCours(s, idQcm){
@@ -187,7 +211,7 @@ function ecranChoix(){
   hint.textContent = "Tes réponses sont enregistrées au fur et à mesure : tu peux t’arrêter et reprendre plus tard.";
 
   const tous = QCM.tous();
-  const finies = s.tentatives.filter(function(t){return t.fin && QCM.trouver(t.qcm);}).reverse();
+  const finies = s.tentatives.filter(function(t){return t.fin && utilisable(t);}).reverse();
 
   panel.innerHTML =
     '<h1>Choisis un QCM</h1>' +
@@ -199,7 +223,7 @@ function ecranChoix(){
           let etat = "";
           if(ec){
             const b = bilanDe(ec);
-            etat = '<span class="etat encours">En cours<br>' + b.faites + ' / ' + b.total + '</span>';
+            etat = '<span class="etat encours">En cours<br>' + b.faites + ' / ' + b.etapes + '</span>';
           } else if(fini){
             const b = bilanDe(fini);
             etat = '<span class="etat">Dernier score<br>' + b.bons + ' / ' + b.total + '</span>';
@@ -249,7 +273,7 @@ function ecranIntro(def){
   panel.innerHTML =
     '<h1>' + esc(def.titre) + '</h1>' +
     def.intro.map(function(p){return '<p class="lead">' + esc(p) + '</p>';}).join("") +
-    (ec ? '<p class="alerte">Tu t’es arrêté à ' + b.faites + ' réponse' + (b.faites > 1 ? 's' : '') + ' sur ' + b.total +
+    (ec ? '<p class="alerte">Tu t’es arrêté après ' + compte(def, b.faites) + ' sur ' + b.etapes +
           ', le ' + quand(ec.debut) + '. Reprends là où tu en étais, ou recommence avec les blocs choisis ci-dessous.</p>' : '') +
     '<div class="keys" style="margin:22px 0 0" id="blocs">' +
       def.themes.map(function(t){
@@ -257,18 +281,18 @@ function ecranIntro(def){
         const on = choisis.has(t.id);
         return '<button class="key' + (on ? " picked-ok" : " dim") + '" data-t="' + esc(t.id) + '" aria-pressed="' + on + '">' +
                '<span class="cap">' + n + '</span><span><b>' + esc(t.nom) + '</b><br>' +
-               '<span class="sub">' + esc(t.note || "") + '</span></span></button>';
+               '<span class="sub">' + fmt(t.note || "") + '</span></span></button>';
       }).join("") +
     '</div>' +
     '<div class="row" style="gap:12px">' +
-      (ec ? '<button class="bigkey" id="reprendre">Reprendre — ' + b.faites + ' / ' + b.total + '</button>' : '') +
+      (ec ? '<button class="bigkey" id="reprendre">Reprendre — ' + b.faites + ' / ' + b.etapes + '</button>' : '') +
       '<button class="bigkey wire" id="go"></button>' +
     '</div>';
 
   function maj(){
     const n = def.questions.filter(function(q){return choisis.has(q.t);}).length;
     const go = document.getElementById("go");
-    go.textContent = n ? (ec ? "Recommencer — " : "Commencer — ") + n + " questions" : "Choisis au moins un bloc";
+    go.textContent = n ? (ec ? "Recommencer — " : "Commencer — ") + compte(def, n) : "Choisis au moins un bloc";
     go.disabled = !n;
     go.style.opacity = n ? "1" : ".45";
   }
@@ -294,7 +318,7 @@ function ecranIntro(def){
 /* ---------- passage du QCM ---------- */
 function commencer(def, choisis){
   const items = def.questions.filter(function(q){return choisis.has(q.t);}).map(function(q){
-    return { q:q.id, p:melange(q.r.map(function(_, n){return n;})) };
+    return (q.type || "choix") === "choix" ? { q:q.id, p:melange(q.r.map(function(_, n){return n;})) } : { q:q.id };
   });
   charger(Sessions.nouvelleTentative(session.id, def.id, Array.from(choisis), items));
   afficher();
@@ -306,7 +330,7 @@ function charger(t){
   ordre = resoudre(qcm, t);
   reps = ordre.map(function(o){
     const r = reponseDe(t, o.id);
-    return r ? r.juste : null;
+    return r ? (o.type === "lecon" ? "lu" : r.juste) : null;
   });
   i = Math.max(0, reps.indexOf(null));
   repondu = false;
@@ -318,6 +342,7 @@ function dessinerStrip(){
     const el = document.createElement("i");
     if(reps[n] === true) el.className = "ok";
     else if(reps[n] === false) el.className = "no";
+    else if(reps[n] === "lu") el.className = "lu";
     else if(n === i) el.className = "now";
     strip.appendChild(el);
   });
@@ -328,7 +353,86 @@ function aide(texte){
   surClic("quitter", ecranChoix);
 }
 
-/* ---------- question ---------- */
+// Enregistre la réponse de l’étape en cours ; renvoie false si la session a disparu.
+function enregistrer(reponse){
+  reponse.q = ordre[i].id;
+  reponse.le = new Date().toISOString();
+  const t = Sessions.repondre(session.id, tentative.id, reponse, i === ordre.length - 1);
+  if(!t){
+    alert("Cette session n’existe plus dans ce navigateur (elle a peut-être été supprimée dans un autre onglet).");
+    ecranSessions();
+    return false;
+  }
+  tentative = t;
+  return true;
+}
+
+function boutonSuivant(libelle){
+  const dernier = (i === ordre.length - 1);
+  return '<div class="row"><button class="bigkey" id="next">' + (dernier ? "Voir mon résultat" : libelle) + '</button></div>';
+}
+
+function brancherSuivant(avant){
+  const nx = document.getElementById("next");
+  nx.onclick = function(){
+    if(avant && avant() === false) return;
+    if(i === ordre.length - 1){ resultat(); } else { i++; afficher(); }
+  };
+  return nx;
+}
+
+/* ---------- éditeur de code en direct ---------- */
+function editeur(id, code, titre){
+  const lignes = code.split("\n").length;
+  return '<div class="atelier">' +
+    '<div class="atelier-tete"><span>' + titre + '</span>' +
+      '<button class="lien" id="' + id + '-reset">Remettre le code de départ</button></div>' +
+    '<textarea class="code-saisie" id="' + id + '" rows="' + Math.min(18, Math.max(5, lignes + 1)) + '"' +
+      ' spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="' + titre + '">' +
+      esc(code) + '</textarea>' +
+    '<div class="atelier-tete"><span>Résultat</span><span class="sub">Tire le coin ↘ pour redimensionner</span></div>' +
+    '<div class="apercu-cadre"><iframe class="apercu" id="' + id + '-apercu" title="Résultat du code"' +
+      ' sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>' +
+  '</div>';
+}
+
+// Le résultat se met à jour pendant la frappe. Tab insère deux espaces ;
+// Échap puis Tab permet de quitter l’éditeur au clavier.
+// L’aperçu n’exécute aucun script (pas de allow-scripts) ; allow-same-origin permet seulement
+// à l’application de lire la page rendue (styles calculés) pour vérifier les exercices.
+function brancherEditeur(id, depart){
+  const ta = document.getElementById(id);
+  const apercu = document.getElementById(id + "-apercu");
+  let minuterie = null, echap = false;
+  function rendre(){ apercu.srcdoc = ta.value; }
+  function plusTard(){ clearTimeout(minuterie); minuterie = setTimeout(rendre, 250); }
+  ta.addEventListener("input", plusTard);
+  ta.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape"){ echap = true; return; }
+    if(ev.key === "Tab" && !ev.shiftKey && !echap){
+      ev.preventDefault();
+      ta.setRangeText("  ", ta.selectionStart, ta.selectionEnd, "end");
+      plusTard();
+    }
+    echap = false;
+  });
+  surClic(id + "-reset", function(){ ta.value = depart; rendre(); ta.focus(); });
+  rendre();
+  return {
+    code: function(){ return ta.value; },
+    remplacer: function(code){ ta.value = code; rendre(); },
+    // Affiche le code actuel et renvoie (une fois chargé) le document rendu.
+    rendu: function(){
+      clearTimeout(minuterie);
+      return new Promise(function(ok){
+        apercu.addEventListener("load", function(){ ok(apercu.contentDocument); }, { once:true });
+        rendre();
+      });
+    }
+  };
+}
+
+/* ---------- étapes ---------- */
 function afficher(){
   if(!ordre.length) return ecranChoix();
   if(reps.indexOf(null) < 0) return resultat();
@@ -336,16 +440,45 @@ function afficher(){
   const item = ordre[i];
   const theme = qcm.themes.find(function(t){return t.id===item.t;});
   topTitle.textContent = theme.nom;
-  topCount.textContent = "Question " + (i+1) + " sur " + ordre.length;
+  topCount.textContent = (qcm.avecLecons ? "Étape " : "Question ") + (i+1) + " sur " + ordre.length;
   dessinerStrip();
   repondu = false;
 
+  if(item.type === "lecon") afficherLecon(item);
+  else if(item.type === "code") afficherCode(item);
+  else afficherChoix(item);
+}
+
+function afficherLecon(item){
+  const l = item.src;
   panel.innerHTML =
-    '<p class="question">' + esc(item.q) + '</p>' +
+    '<p class="theme">' + fmt(l.etiquette || "Leçon") + '</p>' +
+    '<h1 class="lecon">' + fmt(l.titre) + '</h1>' +
+    l.contenu.map(function(c){
+      return typeof c === "string" ? '<p>' + fmt(c) + '</p>' : '<pre class="code">' + esc(c.code) + '</pre>';
+    }).join("") +
+    (l.exemple
+      ? '<h2>Essaie toi-même</h2><p class="sub">Modifie le code : le résultat se met à jour tout de suite.</p>' +
+        editeur("exemple", l.exemple, "Exemple")
+      : '') +
+    boutonSuivant("J’ai compris, on continue");
+
+  if(l.exemple) brancherEditeur("exemple", l.exemple);
+  repondu = true;   // Entrée passe à la suite
+  brancherSuivant(function(){
+    if(!enregistrer({ lu:true })) return false;
+    reps[i] = "lu";
+  });
+  aide('Lis la leçon, puis appuie sur <kbd>Entrée</kbd> pour continuer');
+}
+
+function afficherChoix(item){
+  panel.innerHTML =
+    '<p class="question">' + fmt(item.q) + '</p>' +
     '<div class="keys" id="keys">' +
       item.r.map(function(txt, n){
         return '<button class="key" data-n="' + n + '">' +
-               '<span class="cap">' + LETTRES[n] + '</span><span>' + esc(txt) + '</span></button>';
+               '<span class="cap">' + LETTRES[n] + '</span><span>' + fmt(txt) + '</span></button>';
       }).join("") +
     '</div>' +
     '<div id="apres"></div>';
@@ -363,15 +496,7 @@ function repondre(n){
   repondu = true;
   const item = ordre[i];
   const juste = (n === item.b);
-  const dernier = (i === ordre.length - 1);
-  const t = Sessions.repondre(session.id, tentative.id,
-                              { q:item.id, choix:item.p[n], juste:juste, le:new Date().toISOString() },
-                              dernier);
-  if(!t){
-    alert("Cette session n’existe plus dans ce navigateur (elle a peut-être été supprimée dans un autre onglet).");
-    return ecranSessions();
-  }
-  tentative = t;
+  if(!enregistrer({ choix:item.p[n], juste:juste })) return;
   reps[i] = juste;
   dessinerStrip();
 
@@ -385,41 +510,117 @@ function repondre(n){
 
   document.getElementById("apres").innerHTML =
     '<div class="verdict ' + (juste ? "good" : "bad") + '">' +
-      '<b>' + (juste ? "Bonne réponse" : "Réponse : " + LETTRES[item.b] + ". " + esc(item.r[item.b])) + '</b>' +
-      '<p>' + esc(item.e) + '</p>' +
+      '<b>' + (juste ? "Bonne réponse" : "Réponse : " + LETTRES[item.b] + ". " + fmt(item.r[item.b])) + '</b>' +
+      '<p>' + fmt(item.e) + '</p>' +
     '</div>' +
-    '<div class="row"><button class="bigkey" id="next">' +
-      (dernier ? "Voir mon résultat" : "Question suivante") + '</button></div>';
+    boutonSuivant("Question suivante");
 
-  const nx = document.getElementById("next");
-  nx.focus();
-  nx.onclick = function(){
-    if(dernier){ resultat(); } else { i++; afficher(); }
-  };
+  brancherSuivant().focus();
   aide('Appuie sur <kbd>Entrée</kbd> pour continuer');
+}
+
+// Vérifie l’exercice sur la page réellement rendue dans l’aperçu : test(doc, code) peut lire
+// la structure (doc.querySelector), les styles calculés et les feuilles de style.
+async function verifier(ex, ed){
+  const code = ed.code();
+  const doc = await ed.rendu();
+  return ex.verifs.map(function(v){
+    let ok = false;
+    try{ ok = !!v.test(doc, code); }catch(e){ ok = false; }
+    return { ok:ok, msg:v.msg };
+  });
+}
+
+function listeVerifs(res){
+  return res.map(function(r){
+    const etat = r.ok === null ? "" : (r.ok ? " ok" : " no");
+    const signe = r.ok === null ? "○" : (r.ok ? "✓" : "✗");
+    return '<li class="' + etat.trim() + '"><span class="signe" aria-hidden="true">' + signe + '</span><span>' + fmt(r.msg) + '</span></li>';
+  }).join("");
+}
+
+function afficherCode(item){
+  const ex = item.src;
+  panel.innerHTML =
+    '<p class="theme">' + fmt(ex.etiquette || "Exercice") + '</p>' +
+    '<p class="question">' + fmt(ex.q) + '</p>' +
+    editeur("code", ex.depart, "Ton code") +
+    '<p class="sub" style="margin:18px 0 6px"><b>Ce qui sera vérifié</b></p>' +
+    '<ul class="verifs" id="verifs">' +
+      listeVerifs(ex.verifs.map(function(v){return { ok:null, msg:v.msg };})) +
+    '</ul>' +
+    '<div id="apres"></div>' +
+    '<div class="row" id="actions" style="gap:12px">' +
+      '<button class="bigkey" id="solution">Voir la solution</button>' +
+      '<button class="bigkey wire" id="verifier">Vérifier</button>' +
+    '</div>';
+
+  const ed = brancherEditeur("code", ex.depart);
+  const verifs = document.getElementById("verifs");
+  const apres = document.getElementById("apres");
+  let essais = 0, occupe = false;
+
+  function terminer(juste, code){
+    if(!enregistrer({ code:code, juste:juste, essais:essais })) return;
+    repondu = true;
+    reps[i] = juste;
+    dessinerStrip();
+    document.getElementById("actions").remove();
+    apres.innerHTML =
+      '<div class="verdict ' + (juste ? "good" : "bad") + '">' +
+        '<b>' + (juste ? "Bravo, ton code est juste !" : "Voici une solution possible, dans l’éditeur") + '</b>' +
+        '<p>' + fmt(ex.e || "") + '</p>' +
+      '</div>' +
+      boutonSuivant("Étape suivante");
+    brancherSuivant().focus();
+    aide('Tu peux encore modifier le code pour expérimenter · <kbd>Entrée</kbd> pour continuer');
+  }
+
+  surClic("verifier", async function(){
+    if(occupe || repondu) return;
+    occupe = true;
+    essais++;
+    const res = await verifier(ex, ed);
+    occupe = false;
+    verifs.innerHTML = listeVerifs(res);
+    if(res.every(function(r){return r.ok;})) return terminer(true, ed.code());
+    apres.innerHTML =
+      '<div class="verdict bad"><b>Pas encore</b>' +
+      '<p>Corrige les points marqués d’une croix, puis vérifie à nouveau. Tu peux essayer autant de fois que tu veux.</p></div>';
+  });
+
+  surClic("solution", async function(){
+    if(occupe || repondu) return;
+    occupe = true;
+    const code = ed.code();
+    ed.remplacer(ex.solution);
+    verifs.innerHTML = listeVerifs(await verifier(ex, ed));
+    terminer(false, code);
+  });
+
+  aide('Écris ton code, regarde le résultat, puis clique sur Vérifier');
 }
 
 /* ---------- résultat ---------- */
 function resultat(){
-  const total = ordre.length;
-  const bons = reps.filter(Boolean).length;
+  const notes = ordre.map(function(o, n){return { o:o, n:n };}).filter(function(x){return note(x.o);});
+  const total = notes.length;
+  const bons = notes.filter(function(x){return reps[x.n] === true;}).length;
 
-  const parTheme = qcm.themes.filter(function(t){
-    return ordre.some(function(o){return o.t===t.id;});
-  }).map(function(t){
-    const idx = ordre.map(function(o,n){return o.t===t.id ? n : -1;}).filter(function(n){return n>=0;});
-    const b = idx.filter(function(n){return reps[n];}).length;
-    return { nom:t.nom, b:b, n:idx.length };
-  });
+  const parTheme = qcm.themes.map(function(t){
+    const idx = notes.filter(function(x){return x.o.t === t.id;}).map(function(x){return x.n;});
+    return { nom:t.nom, b:idx.filter(function(n){return reps[n] === true;}).length, n:idx.length };
+  }).filter(function(t){return t.n;});
 
   const pct = total ? bons / total : 0;
   const bilan = qcm.bilans.find(function(x){return pct >= x.min;});
 
-  const rates = ordre.map(function(o){
+  const rates = notes.map(function(x){
+    const o = x.o;
     const rep = reponseDe(tentative, o.id);
     if(rep && rep.juste) return null;
-    const q = qcm.question(o.id);
-    return { q:o.q, r:o.r[o.b], e:o.e, choix: rep ? q.r[rep.choix] : null };
+    if(o.type === "code") return { q:o.q, solution:o.src.solution, e:o.e || "" };
+    return { q:o.q, r:o.r[o.b], e:o.e, choix: rep ? o.src.r[rep.choix] : null };
   }).filter(Boolean);
 
   i = -1;
@@ -431,7 +632,7 @@ function resultat(){
 
   panel.innerHTML =
     '<div class="score"><b>' + bons + '</b><span>bonnes réponses sur ' + total + '</span></div>' +
-    (bilan ? '<p class="lead" style="max-width:56ch">' + esc(bilan.texte) + '</p>' : '') +
+    (bilan ? '<p class="lead" style="max-width:56ch">' + fmt(bilan.texte) + '</p>' : '') +
     '<div class="bars">' +
       parTheme.map(function(t){
         return '<div>' +
@@ -443,9 +644,13 @@ function resultat(){
     (rates.length
       ? '<h2>À revoir (' + rates.length + ')</h2><ul class="misses">' +
         rates.map(function(r){
-          return '<li><q>' + esc(r.q) + '</q>' +
-                 (r.choix ? '<em>Tu as répondu : ' + esc(r.choix) + '</em>' : '') +
-                 '<em><b>' + esc(r.r) + '</b> — ' + esc(r.e) + '</em></li>';
+          if(r.solution !== undefined)
+            return '<li><q>' + fmt(r.q) + '</q><em>Une solution possible :</em>' +
+                   '<pre class="code">' + esc(r.solution) + '</pre>' +
+                   (r.e ? '<em>' + fmt(r.e) + '</em>' : '') + '</li>';
+          return '<li><q>' + fmt(r.q) + '</q>' +
+                 (r.choix ? '<em>Tu as répondu : ' + fmt(r.choix) + '</em>' : '') +
+                 '<em><b>' + fmt(r.r) + '</b> — ' + fmt(r.e) + '</em></li>';
         }).join("") + '</ul>'
       : '<h2>Aucune erreur. Rien à revoir.</h2>') +
     '<div class="row" style="gap:12px">' +
@@ -464,6 +669,7 @@ function resultat(){
 /* ---------- clavier ---------- */
 document.addEventListener("keydown", function(ev){
   if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  if(ev.target && /^(TEXTAREA|INPUT|SELECT)$/.test(ev.target.tagName)) return;
   const k = ev.key.toLowerCase();
   if(!repondu){
     if(!panel.querySelector(".key[data-n]")) return;

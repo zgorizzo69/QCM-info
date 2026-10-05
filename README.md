@@ -1,8 +1,15 @@
 # QCM informatique
 
-Des QCM pour faire le point sur ses connaissances en informatique. C’est un site statique, sans
-installation ni serveur : il fonctionne en ouvrant `index.html` dans un navigateur, ou en ligne via
-GitHub Pages.
+Des QCM pour faire le point sur ses connaissances en informatique, et des cours interactifs pour
+apprendre à coder. C’est un site statique, sans installation ni serveur : il fonctionne en ouvrant
+`index.html` dans un navigateur, ou en ligne via GitHub Pages.
+
+QCM disponibles :
+
+- **Ce que tu sais déjà sur l’ordinateur** (`qcm/positionnement.js`) : QCM de positionnement.
+- **Intelligence artificielle et sécurité en ligne** (`qcm/ia-securite.js`).
+- **Les bases du HTML** (`qcm/html.js`) : leçons, questions et exercices de code en direct.
+- **L’atelier CSS** (`qcm/css.js`) : leçons et défis créatifs pour décorer ses pages.
 
 ## Utilisation
 
@@ -15,6 +22,10 @@ GitHub Pages.
 3. **Choix des blocs** : on peut passer tous les thèmes du QCM ou seulement certains. Un QCM interrompu
    peut être repris.
 4. **Questions**, puis **résultat** par thème, avec la liste des questions à revoir.
+
+Dans les cours HTML et CSS, chaque bloc commence par une **leçon** avec un exemple modifiable (le
+résultat s’affiche en direct), puis des questions, puis un **exercice de code** vérifié
+automatiquement. L’élève peut réessayer autant de fois qu’il veut, ou afficher une solution.
 
 ## Publier sur GitHub Pages
 
@@ -55,6 +66,37 @@ Pour tester en local : ouvrir `index.html`, ou lancer `python3 -m http.server` e
 Pour chaque question : `t` est l’id du thème, `r` les réponses (de 2 à 6), `b` l’indice de la bonne
 réponse dans `r` (l’ordre est mélangé à l’affichage), `e` l’explication montrée après la réponse.
 
+### Leçons et exercices de code
+
+En plus des questions à choix, un QCM peut contenir deux autres types d’étapes, placées dans
+`questions` à l’endroit où elles doivent apparaître :
+
+```js
+{ id:"liens-l1", t:"liens", type:"lecon", titre:"Créer un lien",
+  contenu:[
+    "Un lien s’écrit avec l’élément `<a>`.",          // paragraphe (`code` et **gras** permis)
+    { code:`<a href="https://fr.wikipedia.org">Wikipédia</a>` }   // bloc de code
+  ],
+  exemple:`<a href="https://fr.wikipedia.org">Wikipédia</a>` },  // éditeur en direct (facultatif)
+
+{ id:"liens-c1", t:"liens", type:"code",
+  q:"Crée un lien vers Wikipédia.",
+  depart:`<p>Pour aller plus loin :</p>`,                // code de départ
+  verifs:[
+    { msg:"Un lien mène à Wikipédia",
+      test:function(doc, code){ return /wikipedia/.test(V.attr(doc, "a", "href")); } }
+  ],
+  solution:`<p>Pour aller plus loin :</p>
+<a href="https://fr.wikipedia.org">Wikipédia</a>`,
+  e:"Explication affichée une fois l’exercice terminé." }
+```
+
+Chaque vérification reçoit `doc`, la page réellement rendue (on peut donc lire les styles calculés),
+et `code`, le texte tapé par l’élève. Les outils de `js/verifs.js` (`V.texte`, `V.attr`, `V.style`,
+`V.couleurChoisie`, `V.selecteur`, `V.proprietes`…) simplifient l’écriture des tests. L’aperçu
+n’exécute jamais de script. Les leçons ne comptent pas dans le score ; `etiquette` permet de changer
+le petit titre (« Leçon », « Exercice ») affiché au-dessus.
+
 L’`id` de chaque question est ce qui est enregistré dans les sessions : on peut corriger le texte
 d’une question sans perdre l’historique, mais il ne faut pas réutiliser un ancien id pour une
 question différente. Une erreur dans un fichier QCM (id en double, thème inconnu…) est signalée dans
@@ -79,5 +121,7 @@ la console du navigateur, et ce QCM n’est pas affiché.
 }
 ```
 
-`choix` est l’indice de la réponse choisie dans la liste `r` du fichier QCM. L’export de toutes les
-sessions utilise `"format": "qcm-info/sessions"` avec un tableau `sessions`.
+`choix` est l’indice de la réponse choisie dans la liste `r` du fichier QCM. Une leçon lue est
+enregistrée comme `{ "q": "…", "lu": true }`, un exercice de code comme
+`{ "q": "…", "code": "…", "juste": true, "essais": 2 }` : le code tapé par l’élève est conservé.
+L’export de toutes les sessions utilise `"format": "qcm-info/sessions"` avec un tableau `sessions`.
