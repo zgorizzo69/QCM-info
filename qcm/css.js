@@ -81,7 +81,16 @@
 
 <h1>Mon univers</h1>
 <p>Tous les paragraphes sont bleu-vert.</p>
-<p>Même celui-ci ! Change la couleur dans la règle p.</p>` },
+<p>Même celui-ci ! Change la couleur dans la règle p.</p>`,
+        essais:[
+          { texte:"Dans la règle `h1`, remplace `purple` par `red`.",
+            test:function(doc){ return V.style(V.el(doc, "h1"), "color") === "rgb(255, 0, 0)"; } },
+          { texte:"Ajoute `font-size: 50px;` dans la règle `h1`.",
+            test:function(doc){ return V.style(V.el(doc, "h1"), "font-size") === "50px"; } },
+          { texte:"Ajoute un deuxième titre `<h1>` dans la page : il prend le style tout de suite, sans rien ajouter au CSS !",
+            test:function(doc){ return V.tous(doc, "h1").length >= 2; } }
+        ],
+        lien:"https://www.w3schools.com/css/css_syntax.asp" },
 
       { id:"premiers-1", t:"premiers", q:"Que signifie CSS ?",
         r:["Cascading Style Sheets : des feuilles de style", "Computer Style System", "Creative Site Software", "Colorful Sheet Script"], b:0,
@@ -173,7 +182,16 @@
 </style>
 
 <h1>Coucher de soleil</h1>
-<div></div>` },
+<div></div>`,
+        essais:[
+          { texte:"Change la première couleur du dégradé de `body` en `red`.",
+            test:function(doc){ return /^linear-gradient\((to [a-z ]+, |\d+deg, )?rgb\(255, 0, 0\)/.test(V.style(doc.body, "background-image")); } },
+          { texte:"Donne une direction au dégradé : `linear-gradient(to right, …)`.",
+            test:function(doc){ return /to right|90deg/.test(V.style(doc.body, "background-image")); } },
+          { texte:"Ajoute une quatrième couleur au dégradé.",
+            test:function(doc){ return (V.style(doc.body, "background-image").match(/rgba?\(/g) || []).length >= 4; } }
+        ],
+        lien:"https://www.w3schools.com/css/css3_gradients.asp" },
 
       { id:"couleurs-1", t:"couleurs", q:"Que fait `linear-gradient(red, blue)` ?",
         r:["Un fond qui passe progressivement du rouge au bleu", "Un fond moitié rouge, moitié bleu, sans mélange", "Un texte rouge souligné en bleu", "Il choisit au hasard le rouge ou le bleu"], b:0,
@@ -256,7 +274,16 @@
 </style>
 
 <h1>Le retour du chat</h1>
-<p>Bientôt dans toutes les litières.</p>` },
+<p>Bientôt dans toutes les litières.</p>`,
+        essais:[
+          { texte:"Change la couleur de l’ombre : remplace `crimson` par `red`.",
+            test:function(doc){ return V.style(V.el(doc, "h1"), "text-shadow").indexOf("rgb(255, 0, 0)") >= 0; } },
+          { texte:"Écarte les lettres : `letter-spacing: 15px;`.",
+            test:function(doc){ return V.style(V.el(doc, "h1"), "letter-spacing") === "15px"; } },
+          { texte:"Essaie une autre police pour le paragraphe : `font-family: \"Comic Sans MS\", cursive;`.",
+            test:function(doc){ return /comic/i.test(V.style(V.el(doc, "p"), "font-family")); } }
+        ],
+        lien:"https://www.w3schools.com/css/css_text.asp" },
 
       { id:"texte-1", t:"texte", q:"Quelle propriété ajoute une ombre derrière le texte ?",
         r:["`text-shadow`", "`font-shadow`", "`box-shadow`", "`shadow`"], b:0,
@@ -343,7 +370,16 @@
 <h2 id="titre">Mes stickers</h2>
 <span class="sticker rose">Licorne 🦄</span>
 <span class="sticker menthe">Cactus 🌵</span>
-<span class="sticker ciel">Fusée 🚀</span>` },
+<span class="sticker ciel">Fusée 🚀</span>`,
+        essais:[
+          { texte:"Change la classe `.rose` : remplace `pink` par `red`.",
+            test:function(doc){ return V.style(V.el(doc, ".rose"), "background-color") === "rgb(255, 0, 0)"; } },
+          { texte:"Donne aussi la classe `rose` au sticker Fusée : `class=\"sticker ciel rose\"`. Quelle couleur gagne ?",
+            test:function(doc){ return !!V.el(doc, ".ciel.rose"); } },
+          { texte:"Crée un quatrième sticker, avec une nouvelle classe de couleur.",
+            test:function(doc){ return V.tous(doc, ".sticker").length >= 4; } }
+        ],
+        lien:"https://www.w3schools.com/css/css_selectors.asp" },
 
       { id:"classes-1", t:"classes", q:"Comment sélectionne-t-on la classe `bouton` en CSS ?",
         r:["`.bouton`", "`#bouton`", "`bouton`", "`class:bouton`"], b:0,
@@ -445,7 +481,16 @@
   <h2>Dracofeu 🐉</h2>
   <p>Type : feu</p>
   <p class="stats">Attaque 90 · Défense 70</p>
-</div>` },
+</div>`,
+        essais:[
+          { texte:"Change la bordure de `.carte` : remplace `5px solid gold` par `8px dashed red`.",
+            test:function(doc){ const c = V.el(doc, ".carte"); return V.style(c, "border-top-style") === "dashed" && V.style(c, "border-top-color") === "rgb(255, 0, 0)"; } },
+          { texte:"Augmente le `padding` à `40px` : la carte grossit de l’intérieur.",
+            test:function(doc){ return V.style(V.el(doc, ".carte"), "padding-top") === "40px"; } },
+          { texte:"Mets `border-radius: 50px;` : les coins deviennent tout ronds.",
+            test:function(doc){ return V.style(V.el(doc, ".carte"), "border-top-left-radius") === "50px"; } }
+        ],
+        lien:"https://www.w3schools.com/css/css_boxmodel.asp" },
 
       { id:"boite-1", t:"boite", q:"Quelle propriété crée de l’espace **à l’intérieur** de la boîte, entre le texte et la bordure ?",
         r:["`padding`", "`margin`", "`border`", "`width`"], b:0,
@@ -552,7 +597,16 @@
   <div class="oeil gauche"></div>
   <div class="oeil droit"></div>
   <div class="bouche"></div>
-</div>` },
+</div>`,
+        essais:[
+          { texte:"Change la couleur du visage : remplace `gold` par `red`… il est en colère !",
+            test:function(doc){ return V.style(V.el(doc, ".visage"), "background-color") === "rgb(255, 0, 0)"; } },
+          { texte:"Agrandis les yeux : `width` et `height` à `30px` dans `.oeil`.",
+            test:function(doc){ const o = V.el(doc, ".oeil"); return V.style(o, "width") === "30px" && V.style(o, "height") === "30px"; } },
+          { texte:"Déplace un œil en changeant son `left` (dans `.gauche` ou `.droit`).",
+            test:function(doc){ return V.style(V.el(doc, ".gauche"), "left") !== "45px" || V.style(V.el(doc, ".droit"), "left") !== "95px"; } }
+        ],
+        lien:"https://www.w3schools.com/css/css3_shadows_box.asp" },
 
       { id:"formes-1", t:"formes", q:"Comment transformer un carré en cercle ?",
         r:["`border-radius: 50%;`", "`shape: circle;`", "`border: round;`", "`circle: true;`"], b:0,
@@ -642,7 +696,16 @@
   <div class="case">🍉</div>
   <div class="case">🧁</div>
 </div>
-<p>Remplace center par space-between, puis par flex-end !</p>` },
+<p>Remplace center par space-between, puis par flex-end !</p>`,
+        essais:[
+          { texte:"Dans `.etagere`, remplace `justify-content: center;` par `justify-content: space-between;`.",
+            test:function(doc){ return V.style(V.el(doc, ".etagere"), "justify-content") === "space-between"; } },
+          { texte:"Augmente l’espace entre les cases : `gap: 40px;`.",
+            test:function(doc){ return V.style(V.el(doc, ".etagere"), "column-gap") === "40px"; } },
+          { texte:"Ajoute `flex-direction: column;` à `.etagere` : les cases se rangent en colonne !",
+            test:function(doc){ return V.style(V.el(doc, ".etagere"), "flex-direction") === "column"; } }
+        ],
+        lien:"https://www.w3schools.com/css/css3_flexbox.asp" },
 
       { id:"flex-1", t:"flex", q:"À quel élément donne-t-on `display: flex;` ?",
         r:["Au parent, qui contient les boîtes à ranger", "À chaque enfant", "Obligatoirement à `<body>`", "À l’élément `<style>`"], b:0,
@@ -744,7 +807,16 @@
   }
 </style>
 
-<button class="bouton">Passe la souris sur moi !</button>` },
+<button class="bouton">Passe la souris sur moi !</button>`,
+        essais:[
+          { texte:"Dans `.bouton:hover`, remplace `hotpink` par `red`, puis survole le bouton.",
+            test:function(doc){ return V.selecteur(doc, /:hover/).some(function(r){ return r.style.backgroundColor === "red"; }); } },
+          { texte:"Ralentis l’effet : `transition: 2s;`.",
+            test:function(doc){ return V.style(V.el(doc, ".bouton"), "transition-duration") === "2s"; } },
+          { texte:"Change `rotate(-4deg)` en `rotate(180deg)` : le bouton se retourne !",
+            test:function(doc){ return V.selecteur(doc, /:hover/).some(function(r){ return /180deg/.test(r.style.transform); }); } }
+        ],
+        lien:"https://www.w3schools.com/css/css3_transitions.asp" },
 
       { id:"survol-1", t:"survol", q:"Quand s’applique la règle `a:hover { … }` ?",
         r:["Quand la souris survole un lien", "Quand on a déjà cliqué sur le lien", "Tout le temps", "Quand la page se charge"], b:0,
@@ -864,7 +936,16 @@
 
 <h1>Ça bouge !</h1>
 <span class="balle">⚽</span>
-<span class="etoile">⭐</span>` },
+<span class="etoile">⭐</span>`,
+        essais:[
+          { texte:"Dans `@keyframes arcenciel`, remplace `blue` par `red`.",
+            test:function(doc){ return V.animations(doc).some(function(k){ return k.name === "arcenciel" && Array.prototype.some.call(k.cssRules, function(r){ return r.keyText === "50%" && r.style.color === "red"; }); }); } },
+          { texte:"Accélère la balle : remplace `0.6s` par `0.2s`.",
+            test:function(doc){ return V.style(V.el(doc, ".balle"), "animation-duration") === "0.2s"; } },
+          { texte:"Fais tourner l’étoile dans l’autre sens : `rotate(-360deg)`.",
+            test:function(doc){ return V.animations(doc).some(function(k){ return k.name === "tourner" && /-360deg/.test(k.cssText); }); } }
+        ],
+        lien:"https://www.w3schools.com/css/css3_animations.asp" },
 
       { id:"animations-1", t:"animations", q:"À quoi sert `@keyframes` ?",
         r:["À décrire les étapes d’une animation", "À régler la vitesse de la souris", "À créer un raccourci clavier", "À charger une image"], b:0,
@@ -958,7 +1039,16 @@
   <div class="colonne">Colonne 1</div>
   <div class="colonne">Colonne 2</div>
   <div class="colonne">Colonne 3</div>
-</div>` },
+</div>`,
+        essais:[
+          { texte:"Rétrécis le résultat sous 500 pixels avec le coin ↘ : les colonnes passent l’une sous l’autre.",
+            test:function(doc){ return V.style(V.el(doc, ".colonnes"), "flex-direction") === "column"; } },
+          { texte:"Dans le `@media`, remplace `lightpink` par `red`, puis rétrécis à nouveau.",
+            test:function(doc){ return V.media(doc).some(function(m){ return Array.prototype.some.call(m.cssRules, function(r){ return r.style && r.style.backgroundColor === "red"; }); }); } },
+          { texte:"Change `500px` en `800px` : maintenant, les colonnes changent même sur un écran moyen.",
+            test:function(doc){ return V.media(doc).some(function(m){ return /800px/.test(m.conditionText || m.media.mediaText); }); } }
+        ],
+        lien:"https://www.w3schools.com/css/css_rwd_mediaqueries.asp" },
 
       { id:"ecrans-1", t:"ecrans", q:"Quand s’appliquent les règles de `@media (max-width: 600px) { … }` ?",
         r:["Quand l’écran fait 600 pixels de large ou moins", "Quand l’écran fait plus de 600 pixels", "Tout le temps", "Seulement quand on imprime la page"], b:0,
@@ -1094,7 +1184,18 @@
   <div class="carte"><span class="emoji">⚽</span><p>Le foot</p></div>
   <div class="carte"><span class="emoji">🎨</span><p>Le dessin</p></div>
   <div class="carte"><span class="emoji">🎮</span><p>Les jeux</p></div>
-</div>` },
+</div>`,
+        essais:[
+          { texte:"Remplace le titre « Mes passions » par le tien.",
+            test:function(doc){ const t = V.texte(doc, "h1"); return t !== "" && t !== "Mes passions"; } },
+          { texte:"Change les emojis et les textes des cartes.",
+            test:function(doc){ return V.tous(doc, ".emoji").some(function(e){ return ["⚽", "🎨", "🎮"].indexOf(e.textContent.trim()) < 0; }); } },
+          { texte:"Remplace le dégradé du fond par `red`… puis trouve mieux !",
+            test:function(doc){ return V.style(doc.body, "background-color") === "rgb(255, 0, 0)" || V.style(doc.body, "background-image").indexOf("rgb(255, 0, 0)") >= 0; } },
+          { texte:"Ajoute une quatrième carte.",
+            test:function(doc){ return V.tous(doc, ".carte").length >= 4; } }
+        ],
+        lien:"https://www.w3schools.com/css/css_intro.asp" },
 
       { id:"projet-c1", t:"projet", type:"code", etiquette:"Projet final 🏆",
         q:"Crée ta propre page sur un sujet que tu aimes (ton animal, ton jeu, ton sport, ton artiste…). Elle doit utiliser au moins **8 propriétés CSS différentes**, au moins une **classe**, un effet au **survol** (`:hover`), et un **dégradé** ou une **ombre**.",

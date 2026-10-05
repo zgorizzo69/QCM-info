@@ -4,8 +4,11 @@
 
    Une étape (élément de « questions ») est de l’un de ces types :
      - "choix" (par défaut) : question à choix multiple { q, r, b, e } ;
-     - "lecon" : explication non notée { titre, contenu:[texte | {code}], exemple? } ;
-     - "code"  : exercice de HTML en direct { q, depart, solution, verifs:[{msg, test(doc, code)}], e }. */
+     - "lecon" : explication non notée { titre, contenu:[texte | {code}], exemple? | terminal?,
+                 essais?:[texte | {texte, test}], lien? } ;
+     - "code"  : exercice de HTML en direct { q, depart, solution, verifs:[{msg, test(doc, code)}], e } ;
+                 avec apercu:false, c’est un simple éditeur de texte (doc vaut null) ;
+     - "terminal" : exercice dans le terminal simulé { q, fs, solution:[commandes], verifs:[{msg, test(etat)}], e }. */
 const QCM = (function(){
   const liste = [];
 
@@ -42,6 +45,12 @@ const QCM = (function(){
           return erreur(id, "l’exercice « " + q.id + " » doit avoir des vérifications { msg, test }.");
         continue;
       }
+      if(type === "terminal"){
+        if(!q.q || !Array.isArray(q.solution) || !Array.isArray(q.verifs) || !q.verifs.length ||
+           q.verifs.some(function(v){return !v.msg || typeof v.test !== "function";}))
+          return erreur(id, "l’exercice « " + q.id + " » doit avoir une consigne, une solution et des vérifications.");
+        continue;
+      }
       if(type !== "choix") return erreur(id, "la question « " + q.id + " » a un type inconnu : " + type + ".");
       if(!Array.isArray(q.r) || q.r.length < 2 || q.r.length > 6)
         return erreur(id, "la question « " + q.id + " » doit avoir entre 2 et 6 réponses.");
@@ -59,7 +68,7 @@ const QCM = (function(){
       def.question = function(qid){
         return def.questions.find(function(q){return q.id === qid;});
       };
-      def.avecLecons = def.questions.some(function(q){return q.type === "lecon" || q.type === "code";});
+      def.avecLecons = def.questions.some(function(q){return q.type && q.type !== "choix";});
       liste.push(def);
     },
     tous: function(){ return liste.slice(); },

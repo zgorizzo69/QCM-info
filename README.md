@@ -8,6 +8,8 @@ QCM disponibles :
 
 - **Ce que tu sais déjà sur l’ordinateur** (`qcm/positionnement.js`) : QCM de positionnement.
 - **Intelligence artificielle et sécurité en ligne** (`qcm/ia-securite.js`).
+- **Fichiers, dossiers et terminal** (`qcm/fichiers.js`) : arborescence, commandes `ls`, `cd`, `pwd`,
+  `mkdir`, `touch`, `cat`, `nano` dans un terminal simulé, et édition de texte.
 - **Les bases du HTML** (`qcm/html.js`) : leçons, questions et exercices de code en direct.
 - **L’atelier CSS** (`qcm/css.js`) : leçons et défis créatifs pour décorer ses pages.
 
@@ -17,15 +19,18 @@ QCM disponibles :
    enregistrées dans le navigateur (`localStorage`). Chaque réponse y est ajoutée dès qu’elle est donnée.
    Les sessions peuvent être **exportées** en fichier JSON (une seule, ou toutes à la fois), puis
    **importées** sur un autre poste.
-2. **Choix du QCM** : la liste des QCM disponibles, avec le dernier score ou la progression du QCM en
-   cours, ainsi que l’historique des passages déjà terminés.
+2. **Choix du QCM** : la liste des QCM disponibles, avec la progression du QCM en cours. La section
+   **Mes résultats** donne une note sur 20 par QCM (celle du dernier passage terminé, avec la
+   meilleure note) et la moyenne générale. L’historique liste les passages déjà terminés.
 3. **Choix des blocs** : on peut passer tous les thèmes du QCM ou seulement certains. Un QCM interrompu
    peut être repris.
 4. **Questions**, puis **résultat** par thème, avec la liste des questions à revoir.
 
-Dans les cours HTML et CSS, chaque bloc commence par une **leçon** avec un exemple modifiable (le
-résultat s’affiche en direct), puis des questions, puis un **exercice de code** vérifié
-automatiquement. L’élève peut réessayer autant de fois qu’il veut, ou afficher une solution.
+Dans les cours interactifs, chaque bloc commence par une **leçon** avec un exemple modifiable (le
+résultat s’affiche en direct) ou un terminal d’entraînement, une liste « À toi d’essayer » de petites
+modifications qui se cochent dès qu’elles sont faites, et un lien vers la leçon correspondante sur
+W3Schools. Viennent ensuite des questions, puis un **exercice** vérifié automatiquement : l’élève
+peut réessayer autant de fois qu’il veut, ou afficher une solution.
 
 ## Publier sur GitHub Pages
 
@@ -91,6 +96,24 @@ En plus des questions à choix, un QCM peut contenir deux autres types d’étap
   e:"Explication affichée une fois l’exercice terminé." }
 ```
 
+Une leçon peut aussi proposer des essais et un lien :
+
+```js
+essais:[
+  { texte:"Remplace `purple` par `red`.",                // coché dès que le test réussit
+    test:function(doc, code){ return V.style(V.el(doc, "h1"), "color") === "rgb(255, 0, 0)"; } },
+  "Tire le coin du résultat pour le rétrécir."          // simple conseil, sans coche
+],
+lien:"https://www.w3schools.com/css/css_syntax.asp"
+```
+
+Avec `apercu:false`, l’exemple ou l’exercice est un simple éditeur de texte (le test reçoit
+`doc = null`). Pour le terminal simulé (`js/terminal.js`), une leçon donne `terminal:{…}` (le contenu
+du dossier personnel : un texte est un fichier, un objet un dossier), et un exercice
+`type:"terminal"` donne `fs`, une `solution` (liste de commandes, ou `{ nano, texte }`) et des
+vérifications `test(etat)` : `etat.estDossier("mon-site")`, `etat.aAffiche("notes.txt")`,
+`etat.aVisite("Documents")`, `etat.a_tape(/^pwd$/)`…
+
 Chaque vérification reçoit `doc`, la page réellement rendue (on peut donc lire les styles calculés),
 et `code`, le texte tapé par l’élève. Les outils de `js/verifs.js` (`V.texte`, `V.attr`, `V.style`,
 `V.couleurChoisie`, `V.selecteur`, `V.proprietes`…) simplifient l’écriture des tests. L’aperçu
@@ -123,5 +146,6 @@ la console du navigateur, et ce QCM n’est pas affiché.
 
 `choix` est l’indice de la réponse choisie dans la liste `r` du fichier QCM. Une leçon lue est
 enregistrée comme `{ "q": "…", "lu": true }`, un exercice de code comme
-`{ "q": "…", "code": "…", "juste": true, "essais": 2 }` : le code tapé par l’élève est conservé.
+`{ "q": "…", "code": "…", "juste": true, "essais": 2 }` : le code tapé par l’élève est conservé
+(pour un exercice de terminal, `code` contient les commandes tapées).
 L’export de toutes les sessions utilise `"format": "qcm-info/sessions"` avec un tableau `sessions`.

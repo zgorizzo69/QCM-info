@@ -40,7 +40,16 @@ QCM.ajouter({
       exemple:
 `<h1>Mon premier titre</h1>
 <p>Mon premier paragraphe.</p>
-<p>Change ce texte, et regarde le résultat !</p>` },
+<p>Change ce texte, et regarde le résultat !</p>`,
+      essais:[
+        { texte:"Change le texte du titre `<h1>` : écris ton prénom à la place.",
+          test:function(doc){ const t = V.texte(doc, "h1"); return t !== "" && !/mon premier titre/i.test(t); } },
+        { texte:"Remplace `<h1>` par `<h2>` (et `</h1>` par `</h2>`) : le titre rapetisse.",
+          test:function(doc){ return !!V.el(doc, "h2") && !V.el(doc, "h1"); } },
+        { texte:"Ajoute un troisième paragraphe `<p>` à la fin.",
+          test:function(doc){ return V.tous(doc, "p").length >= 3; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_intro.asp" },
 
     { id:"bases-l2", t:"bases", type:"lecon", titre:"Le squelette d’une page",
       contenu:[
@@ -70,7 +79,16 @@ QCM.ajouter({
   <h1>Bienvenue !</h1>
   <p>Tout ce qui est dans body s’affiche ici.</p>
 </body>
-</html>` },
+</html>`,
+      essais:[
+        { texte:"Change le texte de `<title>` : rien ne bouge dans le résultat, car le titre de l’onglet n’est pas dans la page !",
+          test:function(doc){ const t = V.texte(doc, "title"); return t !== "" && t !== "Ma page"; } },
+        { texte:"Ajoute un deuxième paragraphe dans `<body>`.",
+          test:function(doc){ return V.tous(doc, "body p").length >= 2; } },
+        { texte:"Essaie de mettre un paragraphe dans `<head>` : le navigateur le déplace tout seul dans `<body>` !",
+          test:function(doc, code){ return /<head>[\s\S]*<p[\s>][\s\S]*<\/head>/i.test(code); } }
+      ],
+      lien:"https://www.w3schools.com/html/html_basic.asp" },
 
     { id:"bases-1", t:"bases", q:"Que signifie l’abréviation HTML ?",
       r:["HyperText Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Making Language", "High Technology Modern Language"], b:0,
@@ -132,7 +150,16 @@ QCM.ajouter({
       exemple:
 `<p>Ce mot est <strong>important</strong>.</p>
 <hr>
-<p>Première ligne<br>Deuxième ligne</p>` },
+<p>Première ligne<br>Deuxième ligne</p>`,
+      essais:[
+        { texte:"Mets un autre mot en gras avec `<strong>`.",
+          test:function(doc){ return V.tous(doc, "strong").length >= 2; } },
+        { texte:"Ajoute un deuxième `<br>` pour aller encore à la ligne.",
+          test:function(doc){ return V.tous(doc, "br").length >= 2; } },
+        { texte:"Supprime le `</strong>` : que devient la suite du texte ?",
+          test:function(doc, code){ return (code.match(/<strong/gi) || []).length > (code.match(/<\/strong>/gi) || []).length; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_elements.asp" },
 
     { id:"elements-1", t:"elements", q:"Laquelle de ces lignes est correctement imbriquée ?",
       r:["`<p><strong>Salut</strong></p>`", "`<p><strong>Salut</p></strong>`", "`<strong><p>Salut</strong></p>`", "`<p><strong>Salut</p>`"], b:0,
@@ -175,7 +202,16 @@ QCM.ajouter({
       ],
       exemple:
 `<p title="Coucou, je suis une info-bulle !">Passe la souris sur ce paragraphe.</p>
-<img src="img/chat.svg" alt="Un chat orange assis" width="160">` },
+<img src="img/chat.svg" alt="Un chat orange assis" width="160">`,
+      essais:[
+        { texte:"Change la largeur de l’image : essaie `width=\"300\"`.",
+          test:function(doc){ return V.attr(doc, "img", "width") === "300"; } },
+        { texte:"Change le texte de l’info-bulle, puis passe la souris sur le paragraphe.",
+          test:function(doc){ const t = V.attr(doc, "p", "title"); return t !== "" && !/coucou/i.test(t); } },
+        { texte:"Fais une faute dans `src` (par exemple `img/chot.svg`) : le texte de `alt` apparaît à la place de l’image.",
+          test:function(doc){ const s = V.attr(doc, "img", "src"); return s !== "" && s !== "img/chat.svg"; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_attributes.asp" },
 
     { id:"attributs-1", t:"attributs", q:"Où s’écrit un attribut ?",
       r:["Dans la balise ouvrante, sous la forme `nom=\"valeur\"`", "Dans la balise fermante", "Entre les deux balises, avec le texte", "Tout en haut de la page, avant `<html>`"], b:0,
@@ -227,7 +263,14 @@ QCM.ajouter({
 <h3>Titre 3</h3>
 <h4>Titre 4</h4>
 <h5>Titre 5</h5>
-<h6>Titre 6</h6>` },
+<h6>Titre 6</h6>`,
+      essais:[
+        { texte:"Remplace `<h6>` par `<h1>`, sans oublier la balise fermante : il devient énorme.",
+          test:function(doc){ return V.tous(doc, "h1").length >= 2; } },
+        { texte:"Ajoute un paragraphe `<p>` juste sous le titre 2.",
+          test:function(doc){ return V.avant(V.el(doc, "h2"), V.el(doc, "p")); } }
+      ],
+      lien:"https://www.w3schools.com/html/html_headings.asp" },
 
     { id:"titres-l2", t:"titres", type:"lecon", titre:"Les paragraphes",
       contenu:[
@@ -242,7 +285,14 @@ plusieurs lignes,      avec plein d’espaces.</p>
 
 <hr>
 
-<p>Ici, on va<br>vraiment<br>à la ligne.</p>` },
+<p>Ici, on va<br>vraiment<br>à la ligne.</p>`,
+      essais:[
+        { texte:"Ajoute un `<br>` dans le premier paragraphe, pour aller à la ligne où tu veux.",
+          test:function(doc){ const p = V.el(doc, "p"); return !!p && !!p.querySelector("br"); } },
+        { texte:"Ajoute une deuxième ligne de séparation `<hr>`.",
+          test:function(doc){ return V.tous(doc, "hr").length >= 2; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_paragraphs.asp" },
 
     { id:"titres-1", t:"titres", q:"Quel élément donne le titre le plus important ?",
       r:["`<h1>`", "`<h6>`", "`<head>`", "`<title>`"], b:0,
@@ -306,7 +356,18 @@ et ronronne à merveille.</p>`,
 `<body style="background-color:lightyellow;">
   <h1 style="color:darkorange; text-align:center;">Ma page ensoleillée</h1>
   <p style="font-family:Georgia; font-size:22px;">Un texte plus grand, dans une autre police.</p>
-</body>` },
+</body>`,
+      essais:[
+        { texte:"Change la couleur du titre : remplace `darkorange` par `red`.",
+          test:function(doc){ return V.style(V.el(doc, "h1"), "color") === "rgb(255, 0, 0)"; } },
+        { texte:"Agrandis le texte du paragraphe : essaie `font-size:40px;`.",
+          test:function(doc){ return V.style(V.el(doc, "p"), "font-size") === "40px"; } },
+        { texte:"Aligne le titre à droite avec `text-align:right;`.",
+          test:function(doc){ return V.style(V.el(doc, "h1"), "text-align") === "right"; } },
+        { texte:"Change la couleur de fond de la page : remplace `lightyellow` par `lightblue`.",
+          test:function(doc){ return V.style(doc.body, "background-color") === "rgb(173, 216, 230)"; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_styles.asp" },
 
     { id:"style-1", t:"style", q:"Quelle écriture est correcte ?",
       r:["`<p style=\"color:red;\">`", "`<p color=\"red\">`", "`<p style=\"color=red\">`", "`<p style:\"color:red\">`"], b:0,
@@ -344,7 +405,16 @@ et ronronne à merveille.</p>`,
 <p><em>Accentué</em> et <i>italique</i></p>
 <p><mark>Surligné</mark> et <small>petit</small></p>
 <p><del>Barré</del> et <ins>ajouté</ins></p>
-<p>H<sub>2</sub>O et 2<sup>3</sup> = 8</p>` },
+<p>H<sub>2</sub>O et 2<sup>3</sup> = 8</p>`,
+      essais:[
+        { texte:"Écris 10² (dix au carré) avec `<sup>`.",
+          test:function(doc){ return V.tous(doc, "sup").some(function(s){ return s.textContent.trim() === "2"; }); } },
+        { texte:"Mets le mot « Barré » aussi en `<strong>` : les deux effets s’additionnent.",
+          test:function(doc){ return !!V.el(doc, "del strong, strong del"); } },
+        { texte:"Surligne ton prénom avec `<mark>` dans une nouvelle phrase.",
+          test:function(doc){ return V.tous(doc, "mark").length >= 2; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_formatting.asp" },
 
     { id:"formatage-1", t:"formatage", q:"Quel élément écrit le 2 de H₂O en indice ?",
       r:["`<sub>`", "`<sup>`", "`<small>`", "`<del>`"], b:0,
@@ -386,7 +456,14 @@ et ronronne à merveille.</p>`,
 
 <!-- <p>Ce paragraphe est désactivé : il ne s’affiche pas.</p> -->
 
-<p>Celui-ci s’affiche.</p>` },
+<p>Celui-ci s’affiche.</p>`,
+      essais:[
+        { texte:"Enlève `<!--` et `-->` autour du paragraphe désactivé : il réapparaît !",
+          test:function(doc){ return /désactivé/i.test(doc.body.textContent); } },
+        { texte:"Transforme le titre en commentaire : il disparaît de la page.",
+          test:function(doc, code){ return !V.el(doc, "h1") && /<!--[\s\S]*<h1/i.test(code); } }
+      ],
+      lien:"https://www.w3schools.com/html/html_comments.asp" },
 
     { id:"commentaires-1", t:"commentaires", q:"Comment écrit-on un commentaire en HTML ?",
       r:["`<!-- mon commentaire -->`", "`// mon commentaire`", "`<comment>mon commentaire</comment>`", "`# mon commentaire`"], b:0,
@@ -433,7 +510,16 @@ et ronronne à merveille.</p>`,
 `<h2 style="background-color:tomato; color:white;">tomato</h2>
 <h2 style="background-color:rgb(60, 179, 113); color:white;">rgb(60, 179, 113)</h2>
 <h2 style="background-color:#6a5acd; color:white;">#6a5acd</h2>
-<p>Change les nombres pour inventer ta couleur !</p>` },
+<p>Change les nombres pour inventer ta couleur !</p>`,
+      essais:[
+        { texte:"Change le fond du premier titre : remplace `tomato` par `red`.",
+          test:function(doc){ return V.style(V.el(doc, "h2"), "background-color") === "rgb(255, 0, 0)"; } },
+        { texte:"Invente une couleur en changeant les trois nombres de `rgb(60, 179, 113)`.",
+          test:function(doc){ const h = V.tous(doc, "h2")[1]; return !!h && V.couleurChoisie(h, "background-color", [60,179,113]); } },
+        { texte:"Essaie le noir `#000000`, puis le blanc `#ffffff`, sur le troisième titre.",
+          test:function(doc){ const h = V.tous(doc, "h2")[2]; const c = V.style(h, "background-color"); return c === "rgb(0, 0, 0)" || c === "rgb(255, 255, 255)"; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_colors.asp" },
 
     { id:"couleurs-1", t:"couleurs", q:"Quelle couleur donne `rgb(0, 0, 0)` ?",
       r:["Le noir", "Le blanc", "Le rouge", "Le gris"], b:0,
@@ -473,7 +559,16 @@ et ronronne à merveille.</p>`,
       ],
       exemple:
 `<p>Je cherche souvent sur <a href="https://fr.wikipedia.org" target="_blank">Wikipédia</a>.</p>
-<p>Et j’apprends le code sur <a href="https://www.w3schools.com/html/" target="_blank">W3Schools</a>.</p>` },
+<p>Et j’apprends le code sur <a href="https://www.w3schools.com/html/" target="_blank">W3Schools</a>.</p>`,
+      essais:[
+        { texte:"Change le texte du premier lien : écris « l’encyclopédie libre ».",
+          test:function(doc){ return /encyclop/i.test(V.texte(doc, "a")); } },
+        { texte:"Ajoute un troisième lien, vers ton site préféré.",
+          test:function(doc){ return V.tous(doc, "a").length >= 3; } },
+        { texte:"Ajoute `title=\"…\"` à un lien : une info-bulle apparaît quand on le survole.",
+          test:function(doc){ return !!V.el(doc, "a[title]"); } }
+      ],
+      lien:"https://www.w3schools.com/html/html_links.asp" },
 
     { id:"liens-1", t:"liens", q:"Quel attribut indique l’adresse de destination d’un lien ?",
       r:["`href`", "`src`", "`link`", "`url`"], b:0,
@@ -512,7 +607,16 @@ et ronronne à merveille.</p>`,
       exemple:
 `<img src="img/chat.svg" alt="Un chat orange assis" width="150">
 <img src="img/introuvable.png" alt="Cette image n’existe pas, alors son texte alt s’affiche">
-<p>Change la largeur du chat, ou fais une faute dans src pour voir le texte alt.</p>` },
+<p>Change la largeur du chat, ou fais une faute dans src pour voir le texte alt.</p>`,
+      essais:[
+        { texte:"Change la largeur du chat : essaie `width=\"300\"`.",
+          test:function(doc){ return V.attr(doc, "img", "width") === "300"; } },
+        { texte:"Corrige l’adresse de la deuxième image en `img/chat.svg` : l’image s’affiche à la place du texte.",
+          test:function(doc){ return V.tous(doc, "img").filter(function(i){ return i.getAttribute("src") === "img/chat.svg"; }).length >= 2; } },
+        { texte:"Rends le chat cliquable en le plaçant dans un lien `<a href=\"…\">…</a>`.",
+          test:function(doc){ return !!V.el(doc, "a img"); } }
+      ],
+      lien:"https://www.w3schools.com/html/html_images.asp" },
 
     { id:"images-1", t:"images", q:"Quel attribut donne l’adresse du fichier image ?",
       r:["`src`", "`href`", "`alt`", "`img`"], b:0,
@@ -580,7 +684,16 @@ et ronronne à merveille.</p>`,
     <td>13</td>
     <td>Lapin</td>
   </tr>
-</table>` },
+</table>`,
+      essais:[
+        { texte:"Ajoute une ligne pour toi : un nouveau `<tr>` avec trois `<td>`.",
+          test:function(doc){ return V.tous(doc, "tr").length >= 4; } },
+        { texte:"Dans le `<style>`, remplace `1px solid black` par `3px solid red`.",
+          test:function(doc){ return V.style(V.el(doc, "td"), "border-top-color") === "rgb(255, 0, 0)"; } },
+        { texte:"Ajoute une colonne « Couleur » : un `<th>` dans la première ligne, et un `<td>` dans chacune des autres.",
+          test:function(doc){ const n = V.tous(doc, "tr").map(function(tr){ return tr.children.length; }); return n.length > 0 && n.every(function(x){ return x >= 4; }); } }
+      ],
+      lien:"https://www.w3schools.com/html/html_tables.asp" },
 
     { id:"tableaux-1", t:"tableaux", q:"Dans un tableau, que représente `<tr>` ?",
       r:["Une ligne", "Une colonne", "Une case", "Le titre du tableau"], b:0,
@@ -651,7 +764,16 @@ et ronronne à merveille.</p>`,
 </div>
 <div style="background-color:honeydew; padding:12px; margin-top:10px;">
   <p>Un deuxième div, en dessous du premier.</p>
-</div>` },
+</div>`,
+      essais:[
+        { texte:"Change le fond du premier `div` : remplace `lavender` par `red`.",
+          test:function(doc){ return V.style(V.el(doc, "div"), "background-color") === "rgb(255, 0, 0)"; } },
+        { texte:"Mets le mot « Pouvoir » dans un deuxième `<span>` coloré.",
+          test:function(doc){ return V.tous(doc, "span").length >= 2; } },
+        { texte:"Ajoute un troisième `div`, avec la couleur de ton choix.",
+          test:function(doc){ return V.tous(doc, "div").length >= 3; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_div.asp" },
 
     { id:"div-1", t:"div", q:"À quoi sert un `<div>` ?",
       r:["À regrouper des éléments dans une boîte, par exemple pour leur donner un style commun", "À afficher une image", "À créer un lien", "À diviser un nombre"], b:0,
@@ -694,7 +816,16 @@ et ronronne à merveille.</p>`,
   Jouer ▶
 </button>
 
-<button disabled>Désactivé</button>` },
+<button disabled>Désactivé</button>`,
+      essais:[
+        { texte:"Change la couleur du bouton « Jouer » : remplace `mediumseagreen` par `red`.",
+          test:function(doc){ return V.tous(doc, "button").some(function(b){ return V.style(b, "background-color") === "rgb(255, 0, 0)"; }); } },
+        { texte:"Enlève `disabled` du dernier bouton : il redevient cliquable.",
+          test:function(doc){ return V.tous(doc, "button").length >= 3 && !V.el(doc, "button[disabled]"); } },
+        { texte:"Agrandis encore le bouton « Jouer » : `font-size:30px;`.",
+          test:function(doc){ return V.tous(doc, "button").some(function(b){ return V.style(b, "font-size") === "30px"; }); } }
+      ],
+      lien:"https://www.w3schools.com/tags/tag_button.asp" },
 
     { id:"boutons-1", t:"boutons", q:"Que fait l’attribut `disabled` sur un bouton ?",
       r:["Il le désactive : on ne peut plus cliquer dessus", "Il le cache complètement", "Il le colore en rouge", "Il le fait clignoter"], b:0,
@@ -738,7 +869,16 @@ et ronronne à merveille.</p>`,
   <h2>Je fais 400 pixels maximum</h2>
   <img src="img/chat.svg" alt="Un chat orange assis" width="900" style="max-width:100%; height:auto;">
   <p>L’image fait 900 pixels de large, mais elle ne déborde pas !</p>
-</div>` },
+</div>`,
+      essais:[
+        { texte:"Enlève `max-width:100%;` du style de l’image : elle déborde de la boîte !",
+          test:function(doc){ return V.style(V.el(doc, "img"), "max-width") === "none"; } },
+        { texte:"Change `max-width:400px` en `max-width:250px` sur le `div` : tout rétrécit.",
+          test:function(doc){ return V.style(V.el(doc, "div"), "max-width") === "250px"; } },
+        { texte:"Tire le coin du résultat pour le rendre tout étroit (moins de 300 pixels) : l’image rétrécit avec lui.",
+          test:function(doc){ return doc.documentElement.clientWidth < 300 && V.style(V.el(doc, "img"), "max-width") === "100%"; } }
+      ],
+      lien:"https://www.w3schools.com/html/html_responsive.asp" },
 
     { id:"responsive-1", t:"responsive", q:"Que veut dire qu’une page est « responsive » ?",
       r:["Elle s’adapte à la taille de l’écran", "Elle répond aux messages", "Elle se charge très vite", "Elle ne contient pas d’images"], b:0,

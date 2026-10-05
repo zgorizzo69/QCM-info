@@ -104,6 +104,46 @@ function enCours(s, idQcm){
   return d && !d.fin ? d : null;
 }
 
+/* ---------- notes ---------- */
+function note20(b){ return b.total ? b.bons / b.total * 20 : 0; }
+function noteTexte(n){ return (Math.round(n * 10) / 10).toLocaleString("fr-FR"); }
+
+// Note de chaque QCM : celle du dernier passage terminé (qui contient au moins une question
+// notée), ramenée sur 20 ; on garde aussi la meilleure.
+function notesDe(s){
+  return QCM.tous().map(function(def){
+    const finies = tentativesDe(s, def.id).filter(function(t){ return t.fin && bilanDe(t).total; });
+    if(!finies.length) return null;
+    const derniere = finies[finies.length - 1];
+    const b = bilanDe(derniere);
+    return {
+      def: def, b: b, note: note20(b), passages: finies.length,
+      meilleure: Math.max.apply(null, finies.map(function(t){ return note20(bilanDe(t)); })),
+      blocs: derniere.themes.filter(function(id){ return def.themes.some(function(t){ return t.id === id; }); }).length
+    };
+  }).filter(Boolean);
+}
+
+function sectionNotes(s, nbQcm){
+  const notes = notesDe(s);
+  if(!notes.length) return '<h2>Mes résultats</h2><p class="vide">Termine un QCM pour obtenir ta première note.</p>';
+  const moyenne = notes.reduce(function(a, n){ return a + n.note; }, 0) / notes.length;
+  return '<h2>Mes résultats</h2>' +
+    '<div class="moyenne">' +
+      '<div class="score"><b>' + noteTexte(moyenne) + '</b><span>/ 20</span></div>' +
+      '<p>Moyenne générale · ' + notes.length + ' QCM noté' + (notes.length > 1 ? 's' : '') + ' sur ' + nbQcm + '</p>' +
+    '</div>' +
+    '<ul class="liste notes">' + notes.map(function(n){
+      return '<li><div><span class="nom">' + esc(n.def.titre) + '</span>' +
+             '<span class="sub">' + n.b.bons + ' / ' + n.b.total + ' bonnes réponses · ' +
+               n.blocs + ' bloc' + (n.blocs > 1 ? 's' : '') + ' sur ' + n.def.themes.length +
+               (n.passages > 1 ? ' · meilleure note : ' + noteTexte(n.meilleure) + ' / 20' : '') + '</span></div>' +
+             '<div class="note"><b>' + noteTexte(n.note) + '</b> / 20</div></li>';
+    }).join("") + '</ul>' +
+    '<p class="sub">La note d’un QCM est celle de ton dernier passage terminé, ramenée sur 20. ' +
+    'La moyenne générale est la moyenne de ces notes.</p>';
+}
+
 function sessionOuverte(){
   const s = session && Sessions.trouver(session.id);
   if(!s){ ecranSessions(); return null; }
@@ -234,6 +274,7 @@ function ecranChoix(){
                  etat + '</button>';
         }).join("") + '</div>'
       : '<p class="vide">Aucun QCM n’est chargé. Vérifie la liste des scripts dans index.html.</p>') +
+    sectionNotes(s, tous.length) +
     (finies.length
       ? '<h2>Historique</h2><ul class="liste">' + finies.map(function(t){
           const b = bilanDe(t);
@@ -382,7 +423,7 @@ function brancherSuivant(avant){
 }
 
 /* ---------- éditeur de code en direct ---------- */
-function editeur(id, code, titre){
+function editeur(id, code, titre, avecApercu){
   const lignes = code.split("\n").length;
   return '<div class="atelier">' +
     '<div class="atelier-tete"><span>' + titre + '</span>' +
@@ -390,9 +431,10 @@ function editeur(id, code, titre){
     '<textarea class="code-saisie" id="' + id + '" rows="' + Math.min(18, Math.max(5, lignes + 1)) + '"' +
       ' spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="' + titre + '">' +
       esc(code) + '</textarea>' +
-    '<div class="atelier-tete"><span>Résultat</span><span class="sub">Tire le coin ↘ pour redimensionner</span></div>' +
-    '<div class="apercu-cadre"><iframe class="apercu" id="' + id + '-apercu" title="Résultat du code"' +
-      ' sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>' +
+    (avecApercu === false ? '' :
+      '<div class="atelier-tete"><span>Résultat</span><span class="sub">Tire le coin ↘ pour redimensionner</span></div>' +
+      '<div class="apercu-cadre"><iframe class="apercu" id="' + id + '-apercu" title="Résultat du code"' +
+        ' sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div>') +
   '</div>';
 }
 
@@ -400,11 +442,22 @@ function editeur(id, code, titre){
 // Échap puis Tab permet de quitter l’éditeur au clavier.
 // L’aperçu n’exécute aucun script (pas de allow-scripts) ; allow-same-origin permet seulement
 // à l’application de lire la page rendue (styles calculés) pour vérifier les exercices.
-function brancherEditeur(id, depart){
+// apresRendu(doc, code) est appelé après chaque mise à jour du résultat, et quand on le
+// redimensionne ; doc vaut null pour un éditeur de texte sans aperçu.
+function brancherEditeur(id, depart, apresRendu){
   const ta = document.getElementById(id);
   const apercu = document.getElementById(id + "-apercu");
   let minuterie = null, echap = false;
-  function rendre(){ apercu.srcdoc = ta.value; }
+  function rendre(){
+    if(apercu) apercu.srcdoc = ta.value;
+    else if(apresRendu) apresRendu(null, ta.value);
+  }
+  if(apercu && apresRendu){
+    apercu.addEventListener("load", function(){ apresRendu(apercu.contentDocument, ta.value); });
+    if(window.ResizeObserver) new ResizeObserver(function(){
+      if(apercu.contentDocument && apercu.contentDocument.body) apresRendu(apercu.contentDocument, ta.value);
+    }).observe(apercu);
+  }
   function plusTard(){ clearTimeout(minuterie); minuterie = setTimeout(rendre, 250); }
   ta.addEventListener("input", plusTard);
   ta.addEventListener("keydown", function(ev){
@@ -424,12 +477,58 @@ function brancherEditeur(id, depart){
     // Affiche le code actuel et renvoie (une fois chargé) le document rendu.
     rendu: function(){
       clearTimeout(minuterie);
+      if(!apercu) return Promise.resolve(null);
       return new Promise(function(ok){
         apercu.addEventListener("load", function(){ ok(apercu.contentDocument); }, { once:true });
         rendre();
       });
     }
   };
+}
+
+/* ---------- « À toi d’essayer » et liens ---------- */
+// Un essai est un texte, ou { texte, test(…) } : il est coché dès que le test réussit, et le reste.
+function essaisHtml(essais){
+  if(!essais || !essais.length) return "";
+  return '<div class="essais"><p class="essais-titre">🧪 À toi d’essayer <span class="sub" id="essais-compte"></span></p>' +
+    '<ul class="verifs" id="essais">' + essais.map(function(e){
+      const auto = typeof e !== "string";
+      return '<li><span class="signe" aria-hidden="true">' + (auto ? "○" : "•") + '</span>' +
+             '<span>' + fmt(auto ? e.texte : e) + '</span></li>';
+    }).join("") + '</ul></div>';
+}
+
+function suivreEssais(essais){
+  if(!essais || !essais.length) return null;
+  const lis = document.querySelectorAll("#essais li");
+  const compte = document.getElementById("essais-compte");
+  const auto = essais.filter(function(e){ return typeof e !== "string"; }).length;
+  const faits = new Set();
+  function maj(){
+    if(!auto) return;
+    compte.textContent = faits.size === auto ? "· tout réussi, bravo ! 🎉" : "· " + faits.size + " / " + auto;
+  }
+  maj();
+  return function(){
+    const args = arguments;
+    essais.forEach(function(e, k){
+      if(typeof e === "string" || faits.has(k)) return;
+      let ok = false;
+      try{ ok = !!e.test.apply(null, args); }catch(err){ ok = false; }
+      if(!ok) return;
+      faits.add(k);
+      lis[k].className = "ok";
+      lis[k].firstChild.textContent = "✓";
+    });
+    maj();
+  };
+}
+
+function lienHtml(url){
+  if(!url) return "";
+  const w3 = /w3schools\.com/.test(url);
+  return '<p class="plus-loin">📖 Pour aller plus loin : <a href="' + esc(url) + '" target="_blank" rel="noopener">' +
+         (w3 ? 'la leçon correspondante sur W3Schools' : 'en savoir plus') + '</a>' + (w3 ? ' (en anglais)' : '') + '</p>';
 }
 
 /* ---------- étapes ---------- */
@@ -446,6 +545,7 @@ function afficher(){
 
   if(item.type === "lecon") afficherLecon(item);
   else if(item.type === "code") afficherCode(item);
+  else if(item.type === "terminal") afficherTerminal(item);
   else afficherChoix(item);
 }
 
@@ -457,13 +557,21 @@ function afficherLecon(item){
     l.contenu.map(function(c){
       return typeof c === "string" ? '<p>' + fmt(c) + '</p>' : '<pre class="code">' + esc(c.code) + '</pre>';
     }).join("") +
-    (l.exemple
-      ? '<h2>Essaie toi-même</h2><p class="sub">Modifie le code : le résultat se met à jour tout de suite.</p>' +
-        editeur("exemple", l.exemple, "Exemple")
-      : '') +
+    (l.terminal
+      ? '<h2>Essaie toi-même</h2><p class="sub">Clique dans le terminal, tape une commande puis appuie sur Entrée. ' +
+        'Rien ne peut casser : c’est un terminal d’entraînement.</p><div id="terminal"></div>'
+      : l.exemple
+        ? '<h2>Essaie toi-même</h2><p class="sub">' +
+          (l.apercu === false ? 'Modifie le texte librement.' : 'Modifie le code : le résultat se met à jour tout de suite.') + '</p>' +
+          editeur("exemple", l.exemple, "Exemple", l.apercu !== false)
+        : '') +
+    essaisHtml(l.essais) +
+    lienHtml(l.lien) +
     boutonSuivant("J’ai compris, on continue");
 
-  if(l.exemple) brancherEditeur("exemple", l.exemple);
+  const essayer = suivreEssais(l.essais);
+  if(l.terminal) Terminal.monter(document.getElementById("terminal"), { fs:l.terminal, auChangement:essayer });
+  else if(l.exemple) brancherEditeur("exemple", l.exemple, essayer);
   repondu = true;   // Entrée passe à la suite
   brancherSuivant(function(){
     if(!enregistrer({ lu:true })) return false;
@@ -544,7 +652,7 @@ function afficherCode(item){
   panel.innerHTML =
     '<p class="theme">' + fmt(ex.etiquette || "Exercice") + '</p>' +
     '<p class="question">' + fmt(ex.q) + '</p>' +
-    editeur("code", ex.depart, "Ton code") +
+    editeur("code", ex.depart, ex.apercu === false ? "Ton texte" : "Ton code", ex.apercu !== false) +
     '<p class="sub" style="margin:18px 0 6px"><b>Ce qui sera vérifié</b></p>' +
     '<ul class="verifs" id="verifs">' +
       listeVerifs(ex.verifs.map(function(v){return { ok:null, msg:v.msg };})) +
@@ -601,6 +709,74 @@ function afficherCode(item){
   aide('Écris ton code, regarde le résultat, puis clique sur Vérifier');
 }
 
+// Exercice dans le terminal : la liste se coche au fil des commandes, et l’exercice est réussi
+// dès que tout est coché.
+function afficherTerminal(item){
+  const ex = item.src;
+  panel.innerHTML =
+    '<p class="theme">' + fmt(ex.etiquette || "Exercice") + '</p>' +
+    '<p class="question">' + fmt(ex.q) + '</p>' +
+    '<div id="terminal"></div>' +
+    '<p class="sub" style="margin:18px 0 6px"><b>Ta mission</b></p>' +
+    '<ul class="verifs" id="verifs">' +
+      listeVerifs(ex.verifs.map(function(v){ return { ok:null, msg:v.msg }; })) +
+    '</ul>' +
+    '<div id="apres"></div>' +
+    '<div class="row" id="actions"><button class="bigkey" id="solution">Voir la solution</button></div>';
+
+  const verifs = document.getElementById("verifs");
+  const apres = document.getElementById("apres");
+  let enSolution = false;
+
+  function evaluer(etat){
+    return ex.verifs.map(function(v){
+      let ok = false;
+      try{ ok = !!v.test(etat); }catch(e){ ok = false; }
+      return { ok:ok, msg:v.msg };
+    });
+  }
+
+  function terminer(juste, commandes){
+    if(!enregistrer({ code:commandes.join("\n"), juste:juste, essais:commandes.length })) return;
+    repondu = true;
+    reps[i] = juste;
+    dessinerStrip();
+    document.getElementById("actions").remove();
+    apres.innerHTML =
+      '<div class="verdict ' + (juste ? "good" : "bad") + '">' +
+        '<b>' + (juste ? "Bravo, mission accomplie !" : "Voici une solution possible, rejouée dans le terminal") + '</b>' +
+        (juste ? '' : '<pre class="code">' + esc(Terminal.texteSolution(ex.solution)) + '</pre>') +
+        '<p>' + fmt(ex.e || "") + '</p>' +
+      '</div>' +
+      boutonSuivant("Étape suivante");
+    brancherSuivant().focus();
+    aide('Tu peux encore utiliser le terminal · <kbd>Entrée</kbd> sur le bouton pour continuer');
+  }
+
+  const term = Terminal.monter(document.getElementById("terminal"), {
+    fs: ex.fs,
+    auChangement: function(etat){
+      if(repondu || enSolution) return;
+      const res = evaluer(etat);
+      verifs.innerHTML = listeVerifs(res.map(function(r){ return r.ok ? r : { ok:null, msg:r.msg }; }));
+      if(res.every(function(r){ return r.ok; })) terminer(true, etat.commandes);
+    }
+  });
+
+  surClic("solution", async function(){
+    if(enSolution || repondu) return;
+    enSolution = true;
+    const leurs = term.etat().commandes;
+    document.getElementById("solution").disabled = true;
+    term.reinitialiser();
+    await term.jouer(ex.solution);
+    verifs.innerHTML = listeVerifs(evaluer(term.etat()));
+    terminer(false, leurs);
+  });
+
+  aide('Tape tes commandes dans le terminal : la mission se coche toute seule');
+}
+
 /* ---------- résultat ---------- */
 function resultat(){
   const notes = ordre.map(function(o, n){return { o:o, n:n };}).filter(function(x){return note(x.o);});
@@ -620,6 +796,7 @@ function resultat(){
     const rep = reponseDe(tentative, o.id);
     if(rep && rep.juste) return null;
     if(o.type === "code") return { q:o.q, solution:o.src.solution, e:o.e || "" };
+    if(o.type === "terminal") return { q:o.q, solution:Terminal.texteSolution(o.src.solution), e:o.e || "" };
     return { q:o.q, r:o.r[o.b], e:o.e, choix: rep ? o.src.r[rep.choix] : null };
   }).filter(Boolean);
 
