@@ -4,7 +4,7 @@ Des QCM pour faire le point sur ses connaissances en informatique, et des cours 
 apprendre à coder. C’est un site statique, sans installation ni serveur : il fonctionne en ouvrant
 `index.html` dans un navigateur, ou en ligne via GitHub Pages.
 
-QCM disponibles :
+QCM disponibles:
 
 - **Ce que tu sais déjà sur l’ordinateur** (`qcm/positionnement.js`) : QCM de positionnement.
 - **Intelligence artificielle et sécurité en ligne** (`qcm/ia-securite.js`).
