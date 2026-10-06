@@ -21,9 +21,13 @@ QCM disponibles:
    **importées** sur un autre poste.
 2. **Choix du QCM** : la liste des QCM disponibles, avec la progression du QCM en cours. La section
    **Mes résultats** donne une note sur 20 par QCM (celle du dernier passage terminé, avec la
-   meilleure note) et la moyenne générale. L’historique liste les passages déjà terminés.
+   meilleure note) et la moyenne générale. La section **Examens blancs** donne la note du dernier
+   examen blanc de chaque QCM. L’historique liste les passages déjà terminés.
 3. **Choix des blocs** : on peut passer tous les thèmes du QCM ou seulement certains. Un QCM interrompu
-   peut être repris.
+   peut être repris. En bas de la page, le bouton **Passer l’examen blanc** tire au hasard 10 questions
+   à choix parmi tous les blocs (les leçons et les exercices de code ou de terminal n’en font pas
+   partie). Aucune correction n’est montrée avant la fin, et la note est donnée sur 20. Chaque QCM n’a
+   qu’une note d’examen blanc : un nouvel examen terminé remplace le précédent.
 4. **Questions**, puis **résultat** par thème, avec la liste des questions à revoir.
 
 Dans les cours interactifs, chaque bloc commence par une **leçon** avec un exemple modifiable (le
@@ -148,4 +152,5 @@ la console du navigateur, et ce QCM n’est pas affiché.
 enregistrée comme `{ "q": "…", "lu": true }`, un exercice de code comme
 `{ "q": "…", "code": "…", "juste": true, "essais": 2 }` : le code tapé par l’élève est conservé
 (pour un exercice de terminal, `code` contient les commandes tapées).
+Un examen blanc est une tentative marquée `"examen": true` ; la session n’en garde qu’une par QCM.
 L’export de toutes les sessions utilise `"format": "qcm-info/sessions"` avec un tableau `sessions`.

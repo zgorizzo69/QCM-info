@@ -1,5 +1,8 @@
-/* Application : sessions → choix du QCM → choix des blocs → questions → résultat. */
+/* Application : sessions → choix du QCM → choix des blocs → questions → résultat.
+   Depuis l’écran des blocs, on peut aussi passer un examen blanc : des questions à choix tirées
+   au hasard, sans correction avant la fin. */
 const LETTRES = ["A","B","C","D","E","F"];
+const NB_EXAMEN = 10;  // nombre de questions d’un examen blanc
 const panel = document.getElementById("panel");
 const strip = document.getElementById("strip");
 const hint  = document.getElementById("hint");
@@ -94,8 +97,22 @@ function utilisable(t){
   return !!def && t.ordre.some(function(o){return def.question(o.q);});
 }
 
+// Passages normaux d’un QCM, examens blancs exclus.
 function tentativesDe(s, idQcm){
-  return s.tentatives.filter(function(t){return t.qcm === idQcm && utilisable(t);});
+  return s.tentatives.filter(function(t){return t.qcm === idQcm && !t.examen && utilisable(t);});
+}
+
+function examensDe(s, idQcm){
+  return s.tentatives.filter(function(t){return t.qcm === idQcm && t.examen && utilisable(t);});
+}
+
+// L’examen blanc terminé d’un QCM (la session n’en garde qu’un), et celui en cours.
+function examenFini(s, idQcm){
+  return examensDe(s, idQcm).filter(function(t){return t.fin;}).pop() || null;
+}
+
+function examenEnCours(s, idQcm){
+  return examensDe(s, idQcm).filter(function(t){return !t.fin;}).pop() || null;
 }
 
 function enCours(s, idQcm){
@@ -142,6 +159,23 @@ function sectionNotes(s, nbQcm){
     }).join("") + '</ul>' +
     '<p class="sub">La note d’un QCM est celle de ton dernier passage terminé, ramenée sur 20. ' +
     'La moyenne générale est la moyenne de ces notes.</p>';
+}
+
+function sectionExamens(s){
+  const examens = QCM.tous().map(function(def){
+    const t = examenFini(s, def.id);
+    return t && bilanDe(t).total ? { def:def, t:t, b:bilanDe(t) } : null;
+  }).filter(Boolean);
+  return '<h2>Examens blancs</h2>' +
+    (examens.length
+      ? '<ul class="liste notes">' + examens.map(function(x){
+          return '<li><div><span class="nom">' + esc(x.def.titre) + '</span>' +
+                 '<span class="sub">' + x.b.bons + ' / ' + x.b.total + ' bonnes réponses · le ' + quand(x.t.fin) + '</span></div>' +
+                 '<div class="actions"><div class="note"><b>' + noteTexte(note20(x.b)) + '</b> / 20</div>' +
+                 '<button class="minikey" data-revoir="' + esc(x.t.id) + '">Revoir</button></div></li>';
+        }).join("") + '</ul>' +
+        '<p class="sub">Une seule note par QCM : un nouvel examen blanc remplace la note du précédent.</p>'
+      : '<p class="vide">Aucun examen blanc pour l’instant. Tu peux en passer un en bas de la page de chaque QCM.</p>');
 }
 
 function sessionOuverte(){
@@ -275,10 +309,11 @@ function ecranChoix(){
         }).join("") + '</div>'
       : '<p class="vide">Aucun QCM n’est chargé. Vérifie la liste des scripts dans index.html.</p>') +
     sectionNotes(s, tous.length) +
+    sectionExamens(s) +
     (finies.length
       ? '<h2>Historique</h2><ul class="liste">' + finies.map(function(t){
           const b = bilanDe(t);
-          return '<li><div><span class="nom">' + esc(QCM.trouver(t.qcm).titre) + '</span>' +
+          return '<li><div><span class="nom">' + (t.examen ? 'Examen blanc · ' : '') + esc(QCM.trouver(t.qcm).titre) + '</span>' +
                  '<span class="sub">' + b.bons + ' / ' + b.total + ' · le ' + quand(t.fin) + '</span></div>' +
                  '<div class="actions"><button class="minikey" data-revoir="' + esc(t.id) + '">Revoir</button></div></li>';
         }).join("") + '</ul>'
@@ -310,6 +345,10 @@ function ecranIntro(def){
   const choisis = themesChoisis[def.id] || (themesChoisis[def.id] = new Set(def.themes.map(function(t){return t.id;})));
   const ec = enCours(s, def.id);
   const b = ec && bilanDe(ec);
+  const nbExamen = Math.min(NB_EXAMEN, questionsExamen(def).length);
+  const exFini = examenFini(s, def.id);
+  const exEc = examenEnCours(s, def.id);
+  const exB = exEc && bilanDe(exEc);
 
   panel.innerHTML =
     '<h1>' + esc(def.titre) + '</h1>' +
@@ -328,7 +367,17 @@ function ecranIntro(def){
     '<div class="row" style="gap:12px">' +
       (ec ? '<button class="bigkey" id="reprendre">Reprendre — ' + b.faites + ' / ' + b.etapes + '</button>' : '') +
       '<button class="bigkey wire" id="go"></button>' +
-    '</div>';
+    '</div>' +
+    (nbExamen ? '<div class="encart">' +
+      '<h2>📝 Examen blanc</h2>' +
+      '<p>' + nbExamen + ' questions tirées au hasard parmi tous les blocs de ce QCM. Pas de correction en cours de route : ' +
+        'ta note ne s’affiche qu’à la fin, comme pour un vrai contrôle.</p>' +
+      (exFini ? '<p class="sub">Ta note actuelle : <b>' + noteTexte(note20(bilanDe(exFini))) + ' / 20</b>, le ' + quand(exFini.fin) +
+                '. Un nouvel examen blanc la remplacera.</p>' : '') +
+      '<div class="row" style="gap:12px;margin-top:14px">' +
+        (exEc ? '<button class="bigkey" id="examenReprendre">Reprendre l’examen — ' + exB.faites + ' / ' + exB.etapes + '</button>' : '') +
+        '<button class="bigkey" id="examen">' + (exEc ? 'Nouvel examen blanc' : 'Passer l’examen blanc') + '</button>' +
+      '</div></div>' : '');
 
   function maj(){
     const n = def.questions.filter(function(q){return choisis.has(q.t);}).length;
@@ -354,6 +403,8 @@ function ecranIntro(def){
   surClic("retour", ecranChoix);
   surClic("reprendre", function(){ charger(ec); afficher(); });
   surClic("go", function(){ commencer(def, choisis); });
+  surClic("examenReprendre", function(){ charger(exEc); afficher(); });
+  surClic("examen", function(){ commencerExamen(def); });
 }
 
 /* ---------- passage du QCM ---------- */
@@ -362,6 +413,21 @@ function commencer(def, choisis){
     return (q.type || "choix") === "choix" ? { q:q.id, p:melange(q.r.map(function(_, n){return n;})) } : { q:q.id };
   });
   charger(Sessions.nouvelleTentative(session.id, def.id, Array.from(choisis), items));
+  afficher();
+}
+
+// Seules les questions à choix entrent dans l’examen blanc : les exercices de code et de terminal
+// cochent leurs vérifications en direct, ce qui dévoilerait la correction.
+function questionsExamen(def){
+  return def.questions.filter(function(q){return (q.type || "choix") === "choix";});
+}
+
+function commencerExamen(def){
+  const items = melange(questionsExamen(def)).slice(0, NB_EXAMEN).map(function(q){
+    return { q:q.id, p:melange(q.r.map(function(_, n){return n;})) };
+  });
+  const themes = def.themes.map(function(t){return t.id;});
+  charger(Sessions.nouvelleTentative(session.id, def.id, themes, items, true));
   afficher();
 }
 
@@ -379,9 +445,11 @@ function charger(t){
 
 function dessinerStrip(){
   strip.innerHTML = "";
+  const cache = tentative && tentative.examen && i >= 0;   // examen en cours : rien n’est dévoilé
   ordre.forEach(function(_, n){
     const el = document.createElement("i");
-    if(reps[n] === true) el.className = "ok";
+    if(cache && reps[n] !== null) el.className = "lu";
+    else if(reps[n] === true) el.className = "ok";
     else if(reps[n] === false) el.className = "no";
     else if(reps[n] === "lu") el.className = "lu";
     else if(n === i) el.className = "now";
@@ -538,14 +606,15 @@ function afficher(){
   strip.style.display = "flex";
   const item = ordre[i];
   const theme = qcm.themes.find(function(t){return t.id===item.t;});
-  topTitle.textContent = theme.nom;
-  topCount.textContent = (qcm.avecLecons ? "Étape " : "Question ") + (i+1) + " sur " + ordre.length;
+  topTitle.textContent = tentative.examen ? "Examen blanc · " + qcm.titre : theme.nom;
+  topCount.textContent = (qcm.avecLecons && !tentative.examen ? "Étape " : "Question ") + (i+1) + " sur " + ordre.length;
   dessinerStrip();
   repondu = false;
 
   if(item.type === "lecon") afficherLecon(item);
   else if(item.type === "code") afficherCode(item);
   else if(item.type === "terminal") afficherTerminal(item);
+  else if(tentative.examen) afficherExamen(item);
   else afficherChoix(item);
 }
 
@@ -625,6 +694,50 @@ function repondre(n){
 
   brancherSuivant().focus();
   aide('Appuie sur <kbd>Entrée</kbd> pour continuer');
+}
+
+// Question d’examen blanc : on choisit (et on peut changer d’avis), puis on valide.
+// Ni la bonne réponse ni l’explication ne sont montrées avant le résultat.
+let choixExamen = null;
+
+function afficherExamen(item){
+  const dernier = (i === ordre.length - 1);
+  choixExamen = null;
+  panel.innerHTML =
+    '<p class="theme">📝 Examen blanc</p>' +
+    '<p class="question">' + fmt(item.q) + '</p>' +
+    '<div class="keys" id="keys">' +
+      item.r.map(function(txt, n){
+        return '<button class="key" data-n="' + n + '" aria-pressed="false">' +
+               '<span class="cap">' + LETTRES[n] + '</span><span>' + fmt(txt) + '</span></button>';
+      }).join("") +
+    '</div>' +
+    '<div class="row"><button class="bigkey wire" id="next" disabled>' +
+      (dernier ? "Terminer l’examen" : "Valider et continuer") + '</button></div>';
+
+  panel.querySelectorAll(".key").forEach(function(btn){
+    btn.onclick = function(){ choisirExamen(parseInt(btn.dataset.n,10)); };
+  });
+  document.getElementById("next").onclick = function(){
+    if(choixExamen === null) return;
+    const juste = (choixExamen === item.b);
+    if(!enregistrer({ choix:item.p[choixExamen], juste:juste })) return;
+    reps[i] = juste;
+    if(dernier){ resultat(); } else { i++; afficher(); }
+  };
+
+  aide('Choisis avec ' + item.r.map(function(_, n){return '<kbd>' + LETTRES[n] + '</kbd>';}).join(" ") +
+       ', puis <kbd>Entrée</kbd> pour valider · Ta note s’affichera à la fin');
+}
+
+function choisirExamen(n){
+  choixExamen = n;
+  panel.querySelectorAll(".key").forEach(function(btn){
+    const on = parseInt(btn.dataset.n,10) === n;
+    btn.classList.toggle("choisi", on);
+    btn.setAttribute("aria-pressed", on);
+  });
+  document.getElementById("next").disabled = false;
 }
 
 // Vérifie l’exercice sur la page réellement rendue dans l’aperçu : test(doc, code) peut lire
@@ -803,12 +916,17 @@ function resultat(){
   i = -1;
   repondu = true;
   strip.style.display = "flex";
-  entete("Résultat", '<button class="lien" id="retour">Tous les QCM</button>');
+  const examen = !!tentative.examen;
+  entete(examen ? "Résultat de l’examen blanc" : "Résultat", '<button class="lien" id="retour">Tous les QCM</button>');
   dessinerStrip();
-  hint.textContent = tentative.fin ? qcm.titre + " · terminé le " + quand(tentative.fin) : "";
+  hint.textContent = tentative.fin ? (examen ? "Examen blanc · " : "") + qcm.titre + " · terminé le " + quand(tentative.fin) : "";
 
   panel.innerHTML =
-    '<div class="score"><b>' + bons + '</b><span>bonnes réponses sur ' + total + '</span></div>' +
+    (examen ? '<p class="theme">📝 Examen blanc · ' + esc(qcm.titre) + '</p>' +
+              '<div class="score"><b>' + noteTexte(note20({ bons:bons, total:total })) + '</b><span>/ 20</span></div>' +
+              '<p class="sub">' + bons + ' bonne' + (bons > 1 ? 's' : '') + ' réponse' + (bons > 1 ? 's' : '') + ' sur ' + total +
+              '. C’est ta note d’examen blanc pour ce QCM, visible sur la page des QCM.</p>'
+            : '<div class="score"><b>' + bons + '</b><span>bonnes réponses sur ' + total + '</span></div>') +
     (bilan ? '<p class="lead" style="max-width:56ch">' + fmt(bilan.texte) + '</p>' : '') +
     '<div class="bars">' +
       parTheme.map(function(t){
@@ -832,12 +950,13 @@ function resultat(){
       : '<h2>Aucune erreur. Rien à revoir.</h2>') +
     '<div class="row" style="gap:12px">' +
       '<button class="bigkey" id="print">Imprimer</button>' +
-      '<button class="bigkey wire" id="again">Recommencer</button>' +
+      '<button class="bigkey wire" id="again">' + (examen ? 'Nouvel examen blanc' : 'Recommencer') + '</button>' +
     '</div>';
 
   surClic("retour", ecranChoix);
   surClic("print", function(){ window.print(); });
   surClic("again", function(){
+    if(examen) return commencerExamen(qcm);
     themesChoisis[qcm.id] = new Set(tentative.themes);
     commencer(qcm, themesChoisis[qcm.id]);
   });
@@ -848,16 +967,17 @@ document.addEventListener("keydown", function(ev){
   if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
   if(ev.target && /^(TEXTAREA|INPUT|SELECT)$/.test(ev.target.tagName)) return;
   const k = ev.key.toLowerCase();
-  if(!repondu){
-    if(!panel.querySelector(".key[data-n]")) return;
+  const examen = tentative && tentative.examen && i >= 0;
+  if(!repondu && panel.querySelector(".key[data-n]")){
     const nb = ordre[i].r.length;
     const n = LETTRES.slice(0, nb).map(function(l){return l.toLowerCase();}).indexOf(k);
     const alt = ["1","2","3","4","5","6"].slice(0, nb).indexOf(k);
     const choix = n >= 0 ? n : alt;
-    if(choix >= 0){ ev.preventDefault(); repondre(choix); }
-  } else if(k === "enter"){
+    if(choix >= 0){ ev.preventDefault(); if(examen) choisirExamen(choix); else repondre(choix); return; }
+  }
+  if(k === "enter" && (repondu || examen)){
     const nx = document.getElementById("next");
-    if(nx){ ev.preventDefault(); nx.click(); }
+    if(nx && !nx.disabled){ ev.preventDefault(); nx.click(); }
   }
 });
 

@@ -335,6 +335,23 @@ pre.code{
 .notes .note{font-variant-numeric:tabular-nums;color:var(--ink-soft);white-space:nowrap}
 .notes .note b{font-size:1.45rem;font-weight:900;color:var(--ink)}
 
+/* ---------- examen blanc ---------- */
+.encart{
+  margin:30px 0 0;padding:4px 18px 18px;
+  background:var(--key);border:1px solid var(--bevel);border-radius:8px;
+  box-shadow:0 3px 0 var(--bevel);
+}
+.encart h2{margin-top:14px}
+.encart p{margin:8px 0 0}
+.notes .actions{align-items:center;gap:14px}
+.key.choisi{
+  background:#E9EDFD;border-color:var(--wire);
+  box-shadow:0 4px 0 #152C93;transform:translateY(0);
+}
+.key.choisi .cap{background:var(--wire);border-color:#152C93;color:#fff}
+.bigkey:disabled{opacity:.45;cursor:default}
+.bigkey:disabled:active{transform:none}
+
 /* ---------- terminal simulé ---------- */
 .terminal-zone{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px;margin:14px 0 0}
 .terminal{

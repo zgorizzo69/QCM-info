@@ -3,9 +3,10 @@
    Une session :
      { id, nom, creeLe, majLe, tentatives:[ tentative, ... ] }
    Une tentative (un passage d’un QCM) :
-     { id, qcm, debut, fin, themes:[idTheme],
+     { id, qcm, debut, fin, themes:[idTheme], examen?:true,
        ordre:[ { q:idQuestion, p:[ordre d’affichage des réponses] } ],
        reponses:[ { q:idQuestion, choix:indiceDansR, juste:bool, le:dateISO } ] }
+   « examen » marque un examen blanc : la session n’en garde qu’un par QCM, le dernier.
    « choix » est l’indice de la réponse dans la liste r du fichier QCM, avant mélange. */
 const Sessions = (function(){
   const CLE = "qcm-info.sessions";
@@ -105,10 +106,13 @@ const Sessions = (function(){
       });
     },
 
-    nouvelleTentative: function(idSession, qcm, themes, ordre){
+    // Un nouvel examen blanc remplace l’examen non terminé du même QCM, s’il y en a un.
+    nouvelleTentative: function(idSession, qcm, themes, ordre, examen){
       const t = { id:nouvelId(), qcm:qcm, debut:maintenant(), fin:null, themes:themes, ordre:ordre, reponses:[] };
+      if(examen) t.examen = true;
       modifier(function(etat){
         const s = chercher(etat, idSession);
+        if(examen) s.tentatives = s.tentatives.filter(function(x){ return !(x.examen && x.qcm === qcm && !x.fin); });
         s.tentatives.push(t);
         s.majLe = t.debut;
       });
@@ -116,6 +120,7 @@ const Sessions = (function(){
     },
 
     // Enregistre une réponse dès qu’elle est donnée ; « fin » est posée à la dernière question.
+    // Un examen blanc terminé remplace le précédent examen blanc du même QCM.
     repondre: function(idSession, idTentative, reponse, derniere){
       return modifier(function(etat){
         const s = chercher(etat, idSession);
@@ -124,6 +129,8 @@ const Sessions = (function(){
         t.reponses = t.reponses.filter(function(r){return r.q !== reponse.q;});
         t.reponses.push(reponse);
         if(derniere) t.fin = reponse.le;
+        if(derniere && t.examen)
+          s.tentatives = s.tentatives.filter(function(x){ return x === t || !(x.examen && x.qcm === t.qcm); });
         s.majLe = reponse.le;
         return t;
       });

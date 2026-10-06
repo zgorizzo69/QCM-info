@@ -33,61 +33,84 @@
     titre: "Fichiers, dossiers et terminal",
     resume: "Comprendre comment l’ordinateur range ses fichiers, et les manipuler dans un vrai terminal d’entraînement : ls, cd, mkdir, touch, cat, nano.",
     intro: [
-      "Avant de créer des pages web, il faut savoir où les ranger ! Ici, tu découvres les fichiers et les dossiers, puis le terminal : l’outil des développeurs pour tout faire au clavier.",
-      "Le terminal est un simulateur : tu peux tout essayer sans rien casser. À côté, un explorateur te montre tes dossiers en direct."
+      "🗂️ Avant de créer des pages web, il faut savoir où les ranger ! Ici, tu découvres les fichiers 📄 (les feuilles) et les dossiers 📁 (les pochettes qui les rangent), puis le terminal : l’outil des développeurs pour tout faire au clavier.",
+      "🛟 Le terminal est un simulateur : tu peux tout essayer sans rien casser. À côté, un explorateur te montre tes dossiers en direct."
     ],
 
     themes: [
-      { id:"fichiers", nom:"Fichiers et dossiers",       note:"Extensions, arborescence et chemins." },
-      { id:"terminal", nom:"Le terminal : pwd et ls",     note:"Savoir où l’on est, et ce qu’il y a autour." },
-      { id:"cd",       nom:"Se déplacer avec cd",         note:"Entrer dans un dossier, remonter, revenir chez soi." },
-      { id:"creer",    nom:"Créer : mkdir et touch",      note:"Fabriquer des dossiers et des fichiers." },
-      { id:"cat",      nom:"Lire un fichier : cat",       note:"Afficher un fichier… et résoudre un escape game." },
-      { id:"editeur",  nom:"Éditer du texte",             note:"Éditeur de texte, traitement de texte et raccourcis clavier." },
-      { id:"nano",     nom:"Écrire avec nano",            note:"Un éditeur de texte dans le terminal." }
+      { id:"fichiers", nom:"Fichiers et dossiers",       note:"📄 Feuilles, 📁 pochettes, extensions et chemins." },
+      { id:"terminal", nom:"Le terminal : pwd et ls",     note:"📍 Savoir où l’on est, et 👀 ce qu’il y a autour." },
+      { id:"cd",       nom:"Se déplacer avec cd",         note:"🚪 Entrer dans un dossier, ⬆️ remonter, 🏠 revenir chez soi." },
+      { id:"creer",    nom:"Créer : mkdir et touch",      note:"📁➕ Fabriquer des pochettes et 📄➕ des feuilles." },
+      { id:"cat",      nom:"Lire un fichier : cat",       note:"📖 Afficher un fichier… et résoudre un escape game 🗝️." },
+      { id:"editeur",  nom:"Éditer du texte",             note:"✏️ Éditeur de texte, traitement de texte et ⌨️ raccourcis clavier." },
+      { id:"nano",     nom:"Écrire avec nano",            note:"💾 Un éditeur de texte dans le terminal." }
     ],
 
     questions: [
       /* ================= Fichiers et dossiers ================= */
       { id:"fichiers-l1", t:"fichiers", type:"lecon", titre:"Fichiers et dossiers",
         contenu:[
-          "Tout ce qui est enregistré dans un ordinateur, un texte, une photo, une musique ou un jeu, est rangé dans un **fichier**. Un fichier a un **nom** et souvent une **extension**, après le point, qui indique son type : `devoir.txt`, `chat.png`, `index.html`.",
-          "Pour s’y retrouver, on range les fichiers dans des **dossiers** (on dit aussi **répertoires**). Un dossier peut contenir des fichiers et d’autres dossiers : c’est une **arborescence**, comme les branches d’un arbre.",
+          "📄 Tout ce qui est enregistré dans un ordinateur, un texte, une photo, une musique ou un jeu, est rangé dans un **fichier**. Imagine une **feuille de papier** : on peut écrire dessus, dessiner, coller une photo… Un fichier, c’est pareil, mais en version numérique.",
+          "📁 Pour ne pas avoir des milliers de feuilles en vrac sur le bureau, on les range dans des **pochettes** : ce sont les **dossiers** (on dit aussi **répertoires**). Une pochette « Maths » contient tes feuilles de maths, une pochette « Photos » tes photos.",
+          "🗂️ Et une pochette peut contenir **d’autres pochettes** ! Dans ta pochette « Cours », tu peux avoir une pochette « Maths », une pochette « Français »… et dans « Maths », encore une pochette « Contrôles ». Ces pochettes rangées les unes dans les autres forment une **arborescence**, comme les branches d’un arbre 🌳 : le tronc, puis les grosses branches, puis les petites, et au bout les feuilles.",
           { code:
-`/                     ← la racine : le tout premier dossier
-└── home
-    └── eleve         ← ton dossier personnel, noté ~
-        ├── Documents
-        │   └── notes.txt
-        ├── Images
-        │   └── chat.png
-        └── bienvenue.txt` },
-          "Le **chemin** d’un fichier, c’est la liste des dossiers à traverser pour l’atteindre, séparés par des `/` : `/home/eleve/Documents/notes.txt`.",
-          "Ton dossier personnel a un raccourci : `~` (le tilde). `~/Documents/notes.txt` désigne donc le même fichier.",
-          "Sur Windows, les chemins utilisent `\\` et commencent par une lettre de disque : `C:\\Users\\eleve\\Documents`. L’idée reste la même."
+`📁 /                      ← la racine : la toute première pochette, qui contient tout
+└── 📁 home
+    └── 📁 eleve          ← ton dossier personnel, noté ~
+        ├── 📁 Documents
+        │   └── 📄 notes.txt
+        ├── 📁 Images
+        │   └── 🖼️ chat.png
+        └── 📄 bienvenue.txt` },
+          "🏷️ Un fichier a un **nom**, et souvent une **extension** : les quelques lettres après le dernier point. Elle indique le **type** du fichier, comme l’étiquette sur un pot de confiture dit ce qu’il y a dedans. Grâce à elle, l’ordinateur sait avec quel logiciel l’ouvrir : un `.jpg` s’ouvre dans la visionneuse de photos, un `.mp3` dans le lecteur de musique.",
+          "Les extensions que tu croiseras le plus souvent :",
+          { code:
+`📝 .txt          texte brut, sans mise en forme (notes, listes)
+📃 .docx .odt    document de traitement de texte (Word, LibreOffice)
+📕 .pdf          document prêt à imprimer, qui s’affiche partout pareil
+📊 .xlsx .ods    tableur (Excel, LibreOffice Calc)
+🖼️ .jpg .jpeg    photo (compressée pour prendre peu de place)
+🎨 .png          image, dessin ou capture d’écran (peut être transparente)
+🎞️ .gif          petite image animée
+🎵 .mp3 .wav     son, musique
+🎬 .mp4 .avi     vidéo
+📦 .zip          archive : plusieurs fichiers compressés dans un seul
+⚙️ .exe          programme à lancer (Windows) : attention aux virus !
+🌐 .html         page web
+🎨 .css          style d’une page web (couleurs, tailles, placement)
+⚡ .js           programme JavaScript, qui rend une page web interactive
+🐍 .py           programme en Python` },
+          "⚠️ Changer l’extension ne change pas le contenu : renommer `chat.png` en `chat.mp3` ne transforme pas l’image en musique ! C’est comme coller l’étiquette « confiture » sur un pot de moutarde 🫙 : l’ordinateur sera juste perdu. Et méfie-toi des fichiers comme `photo.jpg.exe` : malgré le `.jpg`, c’est un programme !",
+          "🧭 Le **chemin** d’un fichier, c’est la liste des pochettes à ouvrir, une par une, pour l’atteindre, séparées par des `/` : `/home/eleve/Documents/notes.txt` veut dire « ouvre la pochette racine, puis home, puis eleve, puis Documents, et prends la feuille notes.txt ». C’est comme une adresse postale : pays, ville, rue, numéro 📮.",
+          "🏠 Ton dossier personnel a un raccourci : `~` (le tilde). `~/Documents/notes.txt` désigne donc le même fichier. C’est ta chambre : l’endroit où sont rangées tes affaires à toi.",
+          "🪟 Sur Windows, les chemins utilisent `\\` et commencent par une lettre de disque : `C:\\Users\\eleve\\Documents`. L’idée reste la même."
         ],
         lien:"https://www.w3schools.com/bash/bash_intro.php" },
 
       { id:"fichiers-1", t:"fichiers", q:"Dans `vacances.jpg`, que représente `.jpg` ?",
         r:["L’extension, qui indique le type de fichier : ici une image", "Le nom du dossier", "La taille du fichier", "Le nom de l’auteur"], b:0,
-        e:"`.txt` pour du texte, `.png` et `.jpg` pour des images, `.mp3` pour du son, `.html` pour une page web." },
+        e:"L’extension est l’étiquette du fichier 🏷️ : `.txt` pour du texte 📝, `.png` et `.jpg` pour des images 🖼️, `.mp3` pour du son 🎵, `.mp4` pour une vidéo 🎬, `.html` pour une page web 🌐. Elle dit à l’ordinateur quel logiciel utiliser pour l’ouvrir." },
 
       { id:"fichiers-2", t:"fichiers", q:"Que désigne le chemin `~/Images/chat.png` ?",
         r:["Le fichier chat.png, dans le dossier Images de ton dossier personnel", "Une adresse de site web", "Un dossier appelé chat.png", "Une commande à taper"], b:0,
-        e:"`~` est ton dossier personnel, puis on descend dans `Images` pour trouver `chat.png`." },
+        e:"🏠 `~` est ton dossier personnel ; on ouvre la pochette 📁 `Images`, et on y trouve la feuille 🖼️ `chat.png`." },
 
       { id:"fichiers-3", t:"fichiers", q:"Un dossier peut-il contenir d’autres dossiers ?",
         r:["Oui, autant qu’on veut : c’est ce qui forme l’arborescence", "Non, seulement des fichiers", "Oui, mais un seul", "Non, seulement des images"], b:0,
-        e:"Les dossiers s’emboîtent les uns dans les autres, comme des poupées russes, à partir de la racine `/`." },
+        e:"🗂️ Une pochette peut contenir d’autres pochettes, qui en contiennent d’autres… comme des poupées russes 🪆, à partir de la racine `/`." },
 
       /* ================= Le terminal : pwd et ls ================= */
       { id:"terminal-l1", t:"terminal", type:"lecon", titre:"Le terminal",
         contenu:[
-          "Le **terminal** (ou console) permet de parler à l’ordinateur en tapant des **commandes** au lieu de cliquer. C’est l’outil préféré des développeurs, et celui des serveurs qui font tourner internet.",
-          "Le terminal affiche une **invite** : `eleve@ordi:~$`. Elle dit qui tu es (`eleve`), sur quelle machine (`ordi`) et **où tu te trouves** (`~`, ton dossier personnel). Le `$` veut dire : « j’attends ta commande ».",
-          "`pwd` (print working directory) affiche le chemin complet du dossier où tu es.",
-          "`ls` (list) affiche le contenu du dossier où tu es. `ls Documents` affiche le contenu du dossier Documents. Les dossiers apparaissent en bleu.",
-          "Astuces : la touche **Tab** complète les noms tout seule, et la flèche **↑** rappelle la commande précédente."
+          "💻 Le **terminal** (ou console) permet de parler à l’ordinateur en tapant des **commandes** au lieu de cliquer. C’est un peu comme envoyer des messages à l’ordinateur 💬 : tu écris un ordre, tu appuies sur **Entrée**, et il te répond. C’est l’outil préféré des développeurs, et celui des serveurs qui font tourner internet 🌍.",
+          "🖱️ Avec la souris, tu ouvres les pochettes en double-cliquant dessus. ⌨️ Dans le terminal, tu fais exactement la même chose… mais en tapant des mots. Les pochettes et les feuilles sont les mêmes : l’explorateur à côté du terminal te les montre en direct.",
+          "🚶 Dans le terminal, tu es toujours **quelque part** : dans une pochette précise, comme si tu te tenais dans une pièce de la maison. Toutes tes commandes s’appliquent là où tu te trouves.",
+          "👉 Le terminal affiche une **invite** : `eleve@ordi:~$`. Elle dit qui tu es (`eleve`), sur quelle machine (`ordi`) et **où tu te trouves** (`~`, ton dossier personnel). Le `$` veut dire : « j’attends ta commande ».",
+          "📍 `pwd` (print working directory : « affiche le dossier de travail ») affiche le chemin complet du dossier où tu es. C’est le panneau « Vous êtes ici » sur le plan d’un centre commercial.",
+          "👀 `ls` (list : « liste ») affiche le contenu du dossier où tu es : c’est comme ouvrir la pochette pour regarder les feuilles et les pochettes qu’elle contient. `ls Documents` jette un œil dans la pochette Documents, sans y entrer. Les dossiers apparaissent en **bleu** 🔵, les fichiers en couleur normale.",
+          "📏 `ls -l` affiche la liste en détail (l comme long) : la taille de chaque fichier, sa date de modification… Le `-l` est une **option** : un petit réglage qui modifie le comportement de la commande.",
+          "⚡ Astuces : la touche **Tab** ↹ complète les noms toute seule (tape `ls Doc` puis Tab), et la flèche **↑** rappelle la commande précédente. Si tu te trompes de commande, pas de panique : le terminal répond simplement qu’il ne la connaît pas 🤷."
         ],
         terminal: maison(),
         essais:[
@@ -101,7 +124,7 @@
 
       { id:"terminal-1", t:"terminal", q:"Que fait la commande `ls` ?",
         r:["Elle affiche le contenu d’un dossier", "Elle efface un fichier", "Elle crée un dossier", "Elle éteint l’ordinateur"], b:0,
-        e:"`ls` vient de l’anglais list : lister." },
+        e:"👀 `ls` vient de l’anglais list : lister. C’est comme ouvrir une pochette pour voir ce qu’elle contient." },
 
       { id:"terminal-2", t:"terminal", q:"L’invite affiche `eleve@ordi:~/Images$`. Où te trouves-tu ?",
         r:["Dans le dossier Images de ton dossier personnel", "Sur un site web appelé Images", "À la racine `/`", "Dans un fichier appelé Images"], b:0,
@@ -109,7 +132,7 @@
 
       { id:"terminal-3", t:"terminal", q:"Quelle commande affiche le chemin complet du dossier où tu te trouves ?",
         r:["`pwd`", "`ls`", "`cd`", "`where`"], b:0,
-        e:"print working directory : « affiche le dossier de travail »." },
+        e:"📍 print working directory : « affiche le dossier de travail ». C’est le « Vous êtes ici » du terminal." },
 
       { id:"terminal-c1", t:"terminal", type:"terminal",
         q:"Explore ton dossier personnel : affiche le contenu du dossier `Images`, puis celui du dossier `Documents/vacances`.",
@@ -119,16 +142,17 @@
           { msg:"Tu as listé le contenu de `Documents/vacances`", test:function(e){ return e.aListe("Documents/vacances"); } }
         ],
         solution:["ls Images", "ls Documents/vacances"],
-        e:"Un chemin comme `Documents/vacances` permet de regarder loin sans se déplacer." },
+        e:"🔭 Un chemin comme `Documents/vacances` permet de regarder dans une pochette rangée dans une autre, sans se déplacer." },
 
       /* ================= Se déplacer avec cd ================= */
       { id:"cd-l1", t:"cd", type:"lecon", titre:"Se déplacer avec cd",
         contenu:[
-          "`cd` (change directory) te fait entrer dans un dossier : `cd Documents`. L’invite change : `eleve@ordi:~/Documents$`.",
-          "`cd ..` remonte d’un cran, dans le dossier parent. Les deux points `..` veulent toujours dire « le dossier au-dessus ».",
-          "`cd` tout seul, ou `cd ~`, te ramène dans ton dossier personnel, où que tu sois.",
-          "On peut aller plusieurs dossiers plus loin d’un coup : `cd Documents/vacances`.",
-          "Un chemin qui commence par `/` part de la racine : c’est un chemin **absolu**. Sinon, il part de là où tu es : c’est un chemin **relatif**."
+          "🚪 `cd` (change directory : « change de dossier ») te fait entrer dans un dossier : `cd Documents`. Avec la souris, c’est le double-clic sur la pochette 📁. L’invite change pour te rappeler où tu es : `eleve@ordi:~/Documents$`.",
+          "⬆️ `cd ..` remonte d’un cran, dans le dossier **parent** : tu ressors de la pochette pour revenir dans celle qui la contient. Les deux points `..` veulent toujours dire « la pochette juste au-dessus ». (Et un seul point `.` veut dire « ici, la pochette où je suis ».)",
+          "🏠 `cd` tout seul, ou `cd ~`, te ramène dans ton dossier personnel, où que tu sois : c’est le bouton « retour à la maison ».",
+          "🏃 On peut traverser plusieurs pochettes d’un coup : `cd Documents/vacances` ouvre Documents, puis vacances, en une seule commande. Et `cd ../..` remonte de deux crans.",
+          "🗺️ Un chemin qui commence par `/` part de la racine, tout en haut de l’arbre : c’est un chemin **absolu**, comme une adresse complète (« 12 rue des Lilas, Paris ») qui marche d’où que tu partes. Sinon, il part de là où tu es : c’est un chemin **relatif**, comme « la porte à gauche » 👈, qui dépend de l’endroit où tu te trouves.",
+          "🚫 On ne peut entrer que dans une pochette : `cd` sur une feuille (un fichier) affiche une erreur. On ne rentre pas dans une feuille de papier !"
         ],
         terminal: maison(),
         essais:[
@@ -143,15 +167,15 @@
 
       { id:"cd-1", t:"cd", q:"Que fait `cd ..` ?",
         r:["Elle remonte dans le dossier parent", "Elle efface le dossier", "Elle va dans le dossier personnel", "Elle affiche deux points"], b:0,
-        e:"`..` désigne toujours le dossier juste au-dessus de celui où tu es." },
+        e:"⬆️ `..` désigne toujours le dossier juste au-dessus de celui où tu es : tu ressors de la pochette." },
 
       { id:"cd-2", t:"cd", q:"Tu es dans `~/Documents/vacances`. Où arrives-tu après `cd ../..` ?",
         r:["Dans ton dossier personnel `~`", "Dans `~/Documents`", "À la racine `/`", "Dans `~/Documents/vacances/photos`"], b:0,
-        e:"Chaque `..` remonte d’un cran : de vacances à Documents, puis de Documents à `~`." },
+        e:"⬆️⬆️ Chaque `..` remonte d’un cran : de 📁 vacances à 📁 Documents, puis de Documents à 🏠 `~`." },
 
       { id:"cd-3", t:"cd", q:"Quelle commande te ramène toujours dans ton dossier personnel ?",
         r:["`cd ~`", "`cd ..`", "`cd /`", "`ls ~`"], b:0,
-        e:"`cd /` mène à la racine, tout en haut de l’arborescence, et pas chez toi." },
+        e:"🏠 `cd ~` (ou `cd` tout seul) te ramène chez toi. `cd /` mène à la racine, tout en haut de l’arborescence 🌳, et pas chez toi." },
 
       { id:"cd-c1", t:"cd", type:"terminal",
         q:"Va dans le dossier `photos` (il est dans `Documents/vacances`), affiche son contenu, puis reviens dans ton dossier personnel.",
@@ -163,17 +187,17 @@
             test:function(e){ return e.aVisite("Documents/vacances/photos") && e.dossier === "~"; } }
         ],
         solution:["cd Documents/vacances/photos", "ls", "cd"],
-        e:"Regarde l’invite après chaque `cd` : elle te dit toujours où tu es." },
+        e:"👉 Regarde l’invite après chaque `cd` : elle te dit toujours où tu es." },
 
       /* ================= Créer : mkdir et touch ================= */
       { id:"creer-l1", t:"creer", type:"lecon", titre:"Créer des dossiers et des fichiers",
         contenu:[
-          "`mkdir` (make directory) crée un dossier : `mkdir projets`.",
-          "`touch` crée un fichier vide : `touch idees.txt`. Si le fichier existe déjà, `touch` ne l’abîme pas.",
-          "On peut créer plusieurs choses d’un coup : `mkdir musique videos`, `touch a.txt b.txt`.",
-          "Attention aux espaces : `mkdir mes projets` crée **deux** dossiers, « mes » et « projets » ! On écrit plutôt `mes-projets`, avec un tiret.",
-          "On peut créer directement dans un autre dossier : `touch projets/liste.txt`.",
-          "Pour effacer : `rm fichier` supprime un fichier, `rmdir dossier` un dossier vide. Dans un terminal, il n’y a **pas de corbeille** : ce qui est effacé est perdu."
+          "📁➕ `mkdir` (make directory : « fabrique un dossier ») crée un dossier : `mkdir projets`. C’est prendre une **pochette neuve**, écrire « projets » dessus et la poser là où tu es.",
+          "📄➕ `touch` crée un fichier vide : `touch idees.txt`. C’est poser une **feuille blanche** avec un titre, mais rien d’écrit dessus. Si le fichier existe déjà, `touch` ne l’abîme pas : il fait juste semblant de le toucher (d’où son nom 👆).",
+          "✌️ On peut créer plusieurs choses d’un coup : `mkdir musique videos` crée deux pochettes, `touch a.txt b.txt` deux feuilles.",
+          "⚠️ Attention aux espaces : pour le terminal, l’espace **sépare** les noms. `mkdir mes projets` crée donc **deux** dossiers, « mes » et « projets » ! On écrit plutôt `mes-projets`, avec un tiret, ou `mes_projets`. Évite aussi les accents et les majuscules dans les noms de fichiers de ton site : ça t’évitera des surprises.",
+          "📥 On peut créer directement dans une autre pochette, sans y entrer : `touch projets/liste.txt` glisse une feuille blanche dans la pochette projets.",
+          "🗑️ Pour effacer : `rm fichier` (remove) supprime un fichier, `rmdir dossier` une pochette **vide**. Attention : dans un terminal, il n’y a **pas de corbeille** ! `rm`, c’est la **broyeuse à papier** : ce qui est effacé est perdu pour de bon. Vérifie toujours deux fois avant d’appuyer sur Entrée."
         ],
         terminal: maison(),
         essais:[
@@ -186,15 +210,15 @@
 
       { id:"creer-1", t:"creer", q:"Quelle commande crée un dossier ?",
         r:["`mkdir`", "`touch`", "`ls`", "`cd`"], b:0,
-        e:"make directory : « fabrique un répertoire »." },
+        e:"📁➕ make directory : « fabrique un répertoire ». `touch`, lui, crée une feuille (un fichier), pas une pochette." },
 
       { id:"creer-2", t:"creer", q:"Que fait `touch notes.txt` si le fichier n’existe pas ?",
         r:["Elle crée un fichier vide nommé notes.txt", "Elle affiche une erreur", "Elle crée un dossier notes.txt", "Elle ouvre un éditeur de texte"], b:0,
-        e:"Le fichier est vide : pour écrire dedans, on utilisera un éditeur comme nano." },
+        e:"📄 C’est une feuille blanche : pour écrire dessus, on utilisera un éditeur comme nano ✏️." },
 
       { id:"creer-3", t:"creer", q:"Que fait `mkdir mon dossier` ?",
         r:["Elle crée deux dossiers : « mon » et « dossier »", "Elle crée un dossier « mon dossier »", "Elle affiche une erreur", "Elle entre dans le dossier"], b:0,
-        e:"L’espace sépare les mots d’une commande. C’est pour ça que les développeurs évitent les espaces dans les noms de fichiers." },
+        e:"⚠️ L’espace sépare les mots d’une commande. C’est pour ça que les développeurs évitent les espaces dans les noms de fichiers, et écrivent `mon-dossier`." },
 
       { id:"creer-c1", t:"creer", type:"terminal",
         q:"Prépare ton projet de site web : crée le dossier `mon-site` dans ton dossier personnel. Dedans, crée les fichiers `index.html` et `style.css`, et le dossier `images`.",
@@ -206,15 +230,16 @@
           { msg:"Le dossier `mon-site/images` existe",       test:function(e){ return e.estDossier("mon-site/images"); } }
         ],
         solution:["mkdir mon-site", "cd mon-site", "touch index.html style.css", "mkdir images", "ls"],
-        e:"C’est exactement l’organisation d’un vrai site. Dans les cours suivants, tu rempliras `index.html` avec du HTML et `style.css` avec du CSS !" },
+        e:"🌐 C’est exactement l’organisation d’un vrai site : une pochette 📁 `mon-site` qui contient la page 📄 `index.html`, son style 🎨 `style.css`, et une pochette 📁 `images` pour les photos. Dans les cours suivants, tu rempliras `index.html` avec du HTML et `style.css` avec du CSS !" },
 
       /* ================= Lire un fichier : cat ================= */
       { id:"cat-l1", t:"cat", type:"lecon", titre:"Lire un fichier avec cat",
         contenu:[
-          "`cat` affiche le contenu d’un fichier texte : `cat bienvenue.txt`.",
-          "Avec plusieurs fichiers, `cat` les affiche à la suite : son nom vient de « concatenate », mettre bout à bout.",
-          "Et sur une image ? Une image n’est pas du texte, mais des nombres qui décrivent des pixels. `cat` les affiche quand même… et ça ne ressemble à rien !",
-          "Pour écrire vite une ligne dans un fichier : `echo \"Bonjour\" > salut.txt`. Le `>` envoie le texte dans le fichier au lieu de l’afficher. Attention, il remplace tout ce que le fichier contenait !"
+          "📖 `cat` affiche le contenu d’un fichier texte : `cat bienvenue.txt`. C’est sortir la feuille de sa pochette et la lire à voix haute : le terminal recopie tout ce qui est écrit dessus.",
+          "🔗 Avec plusieurs fichiers, `cat` les affiche à la suite : son nom vient de « concatenate », mettre bout à bout. Rien à voir avec les chats 🐱 !",
+          "🖼️ Et sur une image ? Une image n’est pas du texte, mais une longue liste de nombres qui décrivent la couleur de chaque pixel (chaque petit point de l’écran). `cat` essaie quand même de les lire comme des lettres… et ça donne du charabia 🤯 ! C’est comme lire une partition de musique à voix haute sans savoir la déchiffrer.",
+          "🧠 Les fichiers `.txt`, `.html`, `.css` ou `.js` sont du **texte** : `cat` sait les lire. Les `.png`, `.jpg`, `.mp3` ou `.pdf` sont des fichiers **binaires** : il faut un logiciel spécial pour les décoder (une visionneuse, un lecteur de musique…).",
+          "✍️ Pour écrire vite une ligne dans un fichier : `echo \"Bonjour\" > salut.txt`. `echo` répète le texte, comme un écho 🗣️, et le `>` est une flèche qui l’envoie dans le fichier au lieu de l’afficher. ⚠️ Attention, il **remplace** tout ce que la feuille contenait : c’est comme effacer toute la feuille avant d’écrire !"
         ],
         terminal: maison(),
         essais:[
@@ -227,11 +252,11 @@
 
       { id:"cat-1", t:"cat", q:"Que fait `cat recette.txt` ?",
         r:["Elle affiche le contenu du fichier dans le terminal", "Elle supprime le fichier", "Elle ouvre une photo de chat", "Elle crée le fichier"], b:0,
-        e:"Rien à voir avec les chats : cat vient de concatenate." },
+        e:"📖 `cat` lit la feuille à voix haute dans le terminal. Rien à voir avec les chats 🐱 : cat vient de concatenate." },
 
       { id:"cat-2", t:"cat", q:"Pourquoi `cat photo.jpg` affiche-t-il des caractères incompréhensibles ?",
         r:["Parce qu’une image n’est pas du texte, mais des nombres qui décrivent des pixels", "Parce que la photo est abîmée", "Parce que cat ne marche qu’en anglais", "Parce qu’il faut d’abord taper ls"], b:0,
-        e:"Pour voir une image, il faut un logiciel qui sait la décoder et la dessiner : une visionneuse ou un navigateur." },
+        e:"🖼️ Pour voir une image, il faut un logiciel qui sait la décoder et la dessiner : une visionneuse ou un navigateur. `cat`, lui, ne sait lire que du texte." },
 
       { id:"cat-c1", t:"cat", type:"terminal", etiquette:"Escape game 🗝️",
         q:"Un trésor est caché quelque part dans le dossier `enigme`. Lis les indices avec `cat`, explore avec `ls` et `cd`, et affiche le fichier du trésor !",
@@ -259,16 +284,16 @@
       /* ================= Éditer du texte ================= */
       { id:"editeur-l1", t:"editeur", type:"lecon", titre:"Éditer du texte",
         contenu:[
-          "Un **éditeur de texte** sert à écrire du texte **brut** : seulement des caractères, sans mise en forme. Pas de gras, pas de police, pas d’images. C’est ce qu’il faut pour écrire du code, des notes ou des réglages.",
-          "Quelques éditeurs : le Bloc-notes sur Windows, TextEdit sur Mac, `nano` dans un terminal, ou **VS Code**, l’éditeur préféré des développeurs, qui colore le code pour le rendre lisible.",
-          "Un **traitement de texte** (Word, LibreOffice Writer, Google Docs) est différent : il met en page des documents, avec des polices, des images et des marges. Son fichier contient plein d’informations cachées. Pour écrire du HTML, il ne convient pas !",
-          "Les raccourcis clavier font gagner un temps fou, dans presque tous les logiciels :",
+          "✏️ Un **éditeur de texte** sert à écrire du texte **brut** : seulement des caractères, sans mise en forme. Pas de gras, pas de police, pas d’images. C’est le **crayon à papier** sur une feuille blanche. C’est ce qu’il faut pour écrire du code, des notes ou des réglages (fichiers `.txt`, `.html`, `.css`, `.js`…).",
+          "🧰 Quelques éditeurs : le Bloc-notes sur Windows, TextEdit sur Mac, `nano` dans un terminal, ou **VS Code**, l’éditeur préféré des développeurs, qui colore le code 🌈 pour le rendre lisible.",
+          "🖌️ Un **traitement de texte** (Word, LibreOffice Writer, Google Docs) est différent : c’est l’atelier de mise en page, avec des polices, des couleurs, des images et des marges. Son fichier (`.docx`, `.odt`) contient plein d’informations cachées en plus du texte. Pour écrire du HTML, il ne convient pas : le navigateur serait perdu au milieu de ces informations 🤔 !",
+          "⌨️ Les raccourcis clavier font gagner un temps fou, dans presque tous les logiciels. Le **presse-papiers** 📋, c’est une mémoire invisible où l’ordinateur garde ce que tu as copié ou coupé, en attendant que tu le colles :",
           { code:
-`Ctrl + C   copier            Ctrl + Z   annuler
-Ctrl + X   couper            Ctrl + Y   rétablir
-Ctrl + V   coller            Ctrl + A   tout sélectionner
-Ctrl + S   enregistrer       Ctrl + F   rechercher` },
-          "Pour sélectionner au clavier, garde **Maj** enfoncée et utilise les flèches. **Ctrl + flèche** saute d’un mot à l’autre, **Début** et **Fin** vont au début et à la fin de la ligne. Un double-clic sélectionne un mot, un triple-clic toute la ligne. Sur Mac, la touche **Cmd** remplace **Ctrl**."
+`📋 Ctrl + C   copier            ↩️ Ctrl + Z   annuler
+✂️ Ctrl + X   couper            ↪️ Ctrl + Y   rétablir
+📌 Ctrl + V   coller            🔲 Ctrl + A   tout sélectionner
+💾 Ctrl + S   enregistrer       🔍 Ctrl + F   rechercher` },
+          "🖱️ Pour sélectionner au clavier, garde **Maj** ⇧ enfoncée et utilise les flèches. **Ctrl + flèche** saute d’un mot à l’autre, **Début** et **Fin** vont au début et à la fin de la ligne. Un double-clic sélectionne un mot, un triple-clic toute la ligne. Sur Mac, la touche **Cmd** remplace **Ctrl**."
         ],
         exemple:
 `Ma liste de courses
@@ -331,11 +356,11 @@ Ctrl + S   enregistrer       Ctrl + F   rechercher` },
       /* ================= Écrire avec nano ================= */
       { id:"nano-l1", t:"nano", type:"lecon", titre:"Écrire avec nano",
         contenu:[
-          "`nano` est un éditeur de texte qui s’ouvre directement dans le terminal : `nano liste.txt`. Si le fichier n’existe pas encore, il sera créé quand tu l’enregistreras.",
-          "Tu écris ton texte normalement. En bas, nano rappelle ses raccourcis : le signe `^` veut dire la touche **Ctrl**.",
-          "**Ctrl + O** enregistre (O comme output) · **Ctrl + X** quitte nano (X comme exit). Si tu quittes sans avoir enregistré, nano te prévient.",
-          "Une fois sorti de nano, `cat liste.txt` permet de vérifier ce que contient le fichier.",
-          "Ici, des boutons sous l’éditeur font la même chose que les raccourcis, si ton clavier ne coopère pas."
+          "✏️ `nano` est un éditeur de texte qui s’ouvre directement dans le terminal : `nano liste.txt`. Si `cat` sert à **lire** la feuille, `nano` te donne un **stylo** pour écrire dessus. Si le fichier n’existe pas encore, nano prend une feuille blanche, qui sera rangée dans la pochette quand tu l’enregistreras.",
+          "⌨️ Tu écris ton texte normalement, avec les flèches pour te déplacer (la souris ne sert à rien ici). En bas, nano rappelle ses raccourcis : le signe `^` veut dire la touche **Ctrl**. `^X`, c’est donc Ctrl + X.",
+          "💾 **Ctrl + O** enregistre (O comme output). 🚪 **Ctrl + X** quitte nano (X comme exit). Si tu quittes sans avoir enregistré, nano te prévient pour que tu ne perdes pas ton travail. (Dans un vrai nano, Ctrl + O te redemande le nom du fichier : appuie simplement sur Entrée.)",
+          "🔎 Une fois sorti de nano, tu retrouves l’invite du terminal, et `cat liste.txt` permet de vérifier ce que contient le fichier.",
+          "🆘 Ici, des boutons sous l’éditeur font la même chose que les raccourcis, si ton clavier ne coopère pas."
         ],
         terminal: maison(),
         essais:[
