@@ -26,7 +26,10 @@ prenom.length                      // le nombre de lettres : 3
 prenom.toUpperCase()               // en MAJUSCULES : "LÉA"
 
 17 % 5                             // le reste de la division : 2
-Math.round(2.6)                    // arrondi : 3
+3.5                                // un décimal s'écrit avec un point, pas une virgule
+Math.floor(2.6)                    // arrondi vers le bas : 2
+Math.ceil(2.1)                     // arrondi vers le haut : 3
+Math.round(2.6)                    // arrondi au plus proche : 3
 Math.floor(Math.random() * 6) + 1  // un dé : un nombre entier de 1 à 6`,
 
     themes: [
@@ -34,7 +37,7 @@ Math.floor(Math.random() * 6) + 1  // un dé : un nombre entier de 1 à 6`,
       { id:"calculs",   nom:"Calculer",               note:"➕ Une super calculatrice : + - * / et %." },
       { id:"variables", nom:"Les variables",          note:"📦 Des boîtes avec une étiquette : `let` et `const`." },
       { id:"textes",    nom:"Jouer avec les textes",  note:"🔤 Coller, mesurer, mettre en MAJUSCULES." },
-      { id:"hasard",    nom:"Le hasard",              note:"🎲 `Math.random` pour lancer des dés." },
+      { id:"hasard",    nom:"Nombres et hasard",      note:"🔢 Entiers, décimaux et arrondis, puis 🎲 `Math.random` pour lancer des dés." },
       { id:"projet",    nom:"Projet final",           note:"🏁 Ton premier vrai programme, dans Visual Studio Code." }
     ],
 
@@ -338,6 +341,93 @@ console.log("Son prénom a " + prenom.length + " lettres.");`,
         e:"Avec des variables, il suffit de changer `prenom` ou `couleur` pour fabriquer un tout nouveau héros, sans toucher au reste du programme." },
 
       /* ================= Le hasard ================= */
+      { id:"nombres-l1", t:"hasard", type:"lecon", titre:"Entiers et décimaux",
+        contenu:[
+          "🔢 En JavaScript, comme en maths, il y a deux sortes de nombres :",
+          { code:
+`ENTIERS : sans virgule
+   0   7   42   -3   1000
+   → pour compter : des élèves, des vies,
+     des points, les faces d'un dé
+
+DÉCIMAUX : avec une virgule
+   3.5   0.25   19.99   1.52   -0.5
+   → pour mesurer : une taille (1.52 m),
+     un prix (19.99 €), une température (36.6 °C)` },
+          "⚠️ Attention : en JavaScript, la virgule d’un nombre s’écrit avec un **point**, comme en anglais. On écrit `3.5`, et pas `3,5`. La virgule sert à autre chose : séparer. `console.log(3,5)` affiche deux nombres, 3 et 5 !",
+          "➗ Une division peut transformer des entiers en décimal : `7 / 2` donne `3.5`. Et `10 / 3` donne `3.3333333333333335` : l’ordinateur ne peut pas écrire une infinité de 3, alors il s’arrête au bout de 16 chiffres environ (et le dernier est un peu faux !).",
+          "🎲 Souvent, on a besoin d’un **entier** : on ne lance pas un dé qui tombe sur 3.7, on ne loue pas 2.6 bus, et il n’y a pas d’élève numéro 4.5. Les fonctions `Math` transforment un décimal en entier, en l’arrondissant :",
+          { code:
+`Math.floor(3.7)   →  3    vers le bas      (floor = le plancher)
+Math.ceil(3.2)    →  4    vers le haut     (ceil = le plafond)
+Math.round(3.5)   →  4    au plus proche   (round = arrondir)
+Math.round(3.4)   →  3` },
+          "🏢 Pense à un immeuble : un nombre décimal comme 3.7 flotte entre l’étage 3 et l’étage 4. `Math.floor` le fait descendre au **plancher** (3), `Math.ceil` le fait monter au **plafond** (4), et `Math.round` l’emmène à l’étage le plus proche (4).",
+          "🔍 Pour savoir si un nombre est entier : `Number.isInteger(7)` répond `true`, et `Number.isInteger(7.5)` répond `false`."
+        ],
+        js:
+`console.log(7 / 2);                  // 3.5 : un décimal
+console.log(10 / 3);                 // 3.333… (16 chiffres au plus)
+console.log(Math.floor(3.7));        // 3 : vers le bas
+console.log(Math.ceil(3.2));         // 4 : vers le haut
+console.log(Math.round(3.5));        // 4 : au plus proche
+console.log(Number.isInteger(7));    // true : 7 est un entier
+console.log(Number.isInteger(7.5));  // false : 7.5 est un décimal`,
+        essais:[
+          { texte:"120 élèves partent en sortie dans des bus de 50 places. Calcule `120 / 50` : est-ce un entier ? Puis arrondis vers le haut avec `Math.ceil` pour savoir combien de bus il faut.",
+            test:function(r){ return /Math\.ceil\(\s*120\s*\/\s*50\s*\)/.test(r.sans) && r.logs.indexOf("3") >= 0; } },
+          { texte:"Arrondis le prix 19.99 € à l’euro le plus proche.", test:function(r){ return /Math\.round\(\s*19\.99\s*\)/.test(r.sans) && r.logs.indexOf("20") >= 0; } },
+          { texte:"Écris `console.log(3,5);` avec une virgule : que s’affiche-t-il ?", test:function(r){ return /console\.log\(\s*3\s*,\s*5\s*\)/.test(r.sans); } }
+        ],
+        lien:"https://www.w3schools.com/js/js_math.asp" },
+
+      { id:"nombres-1", t:"hasard", q:"Lequel de ces nombres est un **entier** ?",
+        r:["42", "4.5", "0.5", "3.14"], b:0,
+        e:"Un entier n’a pas de partie après la virgule. 4.5, 0.5 et 3.14 sont des décimaux." },
+
+      { id:"nombres-2", t:"hasard", q:"Comment écrit-on « trois et demi » en JavaScript ?",
+        r:["3.5", "3,5", "\"3 et demi\"", "3:5"], b:0,
+        e:"Le séparateur décimal est un point. Avec une virgule, `3,5` serait lu comme deux nombres séparés : 3 et 5." },
+
+      { id:"nombres-3", t:"hasard", q:"Que vaut `Math.ceil(4.1)` ?",
+        r:["5", "4", "4.1", "0"], b:0,
+        e:"`Math.ceil` arrondit toujours vers le haut, vers le plafond : même 4.1 devient 5." },
+
+      { id:"nombres-4", t:"hasard", niveau:"difficile", q:"41 élèves partent en minibus de 8 places. Quelle formule donne le nombre de minibus nécessaires ?",
+        r:["Math.ceil(41 / 8)", "Math.floor(41 / 8)", "Math.round(41 / 8)", "41 % 8"], b:0,
+        e:"41 / 8 = 5.125. Avec 5 minibus, 1 élève resterait sur le trottoir ! Il faut arrondir vers le haut : `Math.ceil` donne 6. (`Math.round` et `Math.floor` donneraient 5, et `41 % 8` donne le nombre d’élèves en trop : 1.)" },
+
+      { id:"nombres-c1", t:"hasard", type:"js",
+        q:"🚌 La sortie scolaire ! **130 élèves** partent en bus de **50 places**. Avec des calculs (pas de résultat écrit à la main !), crée une variable `nombreDeBus` qui contient un **entier** (on ne loue pas 2.6 bus !), puis une variable `placesVides` : le nombre de places libres dans les bus. Affiche les deux.",
+        depart:
+`const eleves = 130;
+const placesParBus = 50;
+
+// Combien de bus ? (un entier !)
+
+// Combien de places vides ?
+`,
+        verifs:[
+          { msg:"`nombreDeBus` vaut 3", dans:function(){ return nombreDeBus === 3; } },
+          { msg:"`nombreDeBus` est un entier", dans:function(){ return Number.isInteger(nombreDeBus); } },
+          { msg:"`placesVides` vaut 20", dans:function(){ return placesVides === 20; } },
+          { msg:"Tu arrondis avec une fonction `Math`", test:function(r){ return /Math\.(ceil|floor|round)\s*\(/.test(r.sans); } },
+          { msg:"Les résultats sont calculés, pas écrits à la main", test:function(r){ return !/nombreDeBus\s*=\s*3\s*;/.test(r.sans) && !/placesVides\s*=\s*20\s*;/.test(r.sans); } },
+          { msg:"Les deux résultats sont affichés", test:function(r){ var t = r.logs.join("\n"); return /(^|\D)3(\D|$)/.test(t) && /20/.test(t); } }
+        ],
+        solution:
+`const eleves = 130;
+const placesParBus = 50;
+
+// Combien de bus ? (un entier !)
+const nombreDeBus = Math.ceil(eleves / placesParBus);
+console.log("Il faut " + nombreDeBus + " bus 🚌");
+
+// Combien de places vides ?
+const placesVides = nombreDeBus * placesParBus - eleves;
+console.log("Il restera " + placesVides + " places vides.");`,
+        e:"130 / 50 = 2.6 : avec 2 bus, 30 élèves resteraient à l’école ! `Math.ceil` arrondit vers le haut : 3 bus, soit 150 places pour 130 élèves, et 20 places vides." },
+
       { id:"hasard-l1", t:"hasard", type:"lecon", titre:"Le hasard : lancer des dés",
         contenu:[
           "🎲 Les jeux ont besoin de hasard. `Math.random()` donne un nombre **au hasard** entre 0 et 1 (jamais 1 pile), par exemple 0.5381…",
@@ -347,7 +437,7 @@ console.log("Son prénom a " + prenom.length + " lettres.");`,
 Math.random() * 6                    4.38…     entre 0 et 5.99…
 Math.floor(Math.random() * 6)        4         un entier de 0 à 5
 Math.floor(Math.random() * 6) + 1    5         un entier de 1 à 6 🎲` },
-          "⬇️ `Math.floor()` arrondit **vers le bas** (il coupe la virgule) : `Math.floor(4.9)` vaut 4. `Math.round()` arrondit au plus proche : `Math.round(4.6)` vaut 5.",
+          "⬇️ Tu reconnais `Math.floor()`, vue dans la leçon sur les entiers et les décimaux : elle arrondit **vers le bas**, au plancher. `Math.floor(4.9)` vaut 4. C’est elle qui transforme le décimal du hasard en un entier, comme la face d’un dé.",
           "🎯 La recette à retenir : pour un nombre entier de 1 à N, on écrit `Math.floor(Math.random() * N) + 1`.",
           "🔁 Exécute plusieurs fois le même programme : le résultat change à chaque fois !"
         ],

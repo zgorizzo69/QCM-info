@@ -43,7 +43,7 @@ const ProjetJs = (function(){
 
   window.addEventListener("error", function (e) {
     if (!e.lineno) {
-      ajouter("❌ Une erreur s'est produite. Pour voir laquelle et à quelle ligne : ouvre la console du navigateur (touche F12), ou ouvre la page avec Live Server.", "erreur");
+      ajouter("❌ Une erreur s'est produite. Pour voir laquelle et à quelle ligne : ouvre la console du navigateur (touche F12, onglet Console).", "erreur");
       return;
     }
     var fichier = (e.filename || "").split("/").pop() || "script.js";
@@ -176,17 +176,17 @@ footer {
     "Décompresse le fichier `.zip` (clic droit → **Extraire tout**).",
     "Ouvre **Visual Studio Code**, puis **Fichier → Ouvrir le dossier…** et choisis le dossier du projet.",
     "Ouvre `script.js` : c’est là que tu écris ton programme ✍️.",
-    "Ouvre `index.html` dans ton navigateur : double-clic sur le fichier, ou, avec l’extension **Live Server**, clic droit → **Open with Live Server**.",
-    "Après chaque modification : enregistre (**Ctrl + S**), puis recharge la page (**F5**). Live Server recharge tout seul.",
-    "Tout ce que tu écris avec `console.log()` s’affiche sur la page. Une erreur ? Elle apparaît en rouge, avec le numéro de la ligne."
+    "Ouvre `index.html` dans ton navigateur : double-clic sur le fichier dans le dossier du projet (ou clic droit → **Ouvrir avec** → ton navigateur).",
+    "Après chaque modification : enregistre (**Ctrl + S**) dans Visual Studio Code, puis recharge la page dans le navigateur (**F5**).",
+    "Tout ce que tu écris avec `console.log()` s’affiche sur la page. Une erreur ? Un message rouge apparaît : pour savoir laquelle et à quelle ligne, ouvre la console du navigateur avec **F12**, onglet **Console**."
   ];
 
   const DEMARRER_PAGE = [
     "Décompresse le fichier `.zip` (clic droit → **Extraire tout**).",
     "Ouvre **Visual Studio Code**, puis **Fichier → Ouvrir le dossier…** et choisis le dossier du projet.",
-    "Ouvre `index.html` dans ton navigateur : double-clic sur le fichier, ou, avec l’extension **Live Server**, clic droit → **Open with Live Server**.",
+    "Ouvre `index.html` dans ton navigateur : double-clic sur le fichier dans le dossier du projet (ou clic droit → **Ouvrir avec** → ton navigateur).",
     "Ton JavaScript va dans `script.js`, la page dans `index.html` et la décoration dans `style.css`.",
-    "Après chaque modification : enregistre (**Ctrl + S**), puis recharge la page (**F5**). Live Server recharge tout seul.",
+    "Après chaque modification : enregistre (**Ctrl + S**) dans Visual Studio Code, puis recharge la page dans le navigateur (**F5**).",
     "Pour voir tes `console.log` et les erreurs : ouvre la console du navigateur avec **F12**, onglet **Console**."
   ];
 
@@ -242,7 +242,7 @@ footer {
       "",
       "## 💡 Si ça ne marche pas",
       "",
-      "- Lis le message d’erreur : il donne le **numéro de la ligne** où chercher.",
+      "- Ouvre la console du navigateur (**F12**, onglet **Console**) et lis le message d’erreur : il donne le **numéro de la ligne** où chercher.",
       "- Vérifie les guillemets `\"`, les parenthèses `( )` et les accolades `{ }` : chacune doit être fermée.",
       "- Les majuscules comptent : `score` et `Score` sont deux noms différents.",
       "- Avance petit à petit : écris quelques lignes, enregistre, teste, puis continue.",
