@@ -9,7 +9,11 @@
                  interactif(zone, signaler) dessine un jeu dans la zone (voir js/ia-jeux.js) ;
      - "code"  : exercice de HTML en direct { q, depart, solution, verifs:[{msg, test(doc, code)}], e } ;
                  avec apercu:false, c’est un simple éditeur de texte (doc vaut null) ;
-     - "terminal" : exercice dans le terminal simulé { q, fs, solution:[commandes], verifs:[{msg, test(etat)}], e }. */
+     - "terminal" : exercice dans le terminal simulé { q, fs, solution:[commandes], verifs:[{msg, test(etat)}], e } ;
+     - "js" : exercice de JavaScript { q, depart, solution, page?, reponses?, e,
+              verifs:[{ msg, test?(r), dans?(p), avant?(p), reponses? }] } (voir js/bac-js.js) ;
+     - "projet" : projets de fin de module au choix { titre, contenu:[texte], projets:[projet] } (voir js/projets-js.js).
+   Une leçon peut aussi donner js:"code" (avec page? et reponses?) : un atelier JavaScript exécutable. */
 const QCM = (function(){
   const liste = [];
 
@@ -50,6 +54,20 @@ const QCM = (function(){
         if(!q.q || !Array.isArray(q.solution) || !Array.isArray(q.verifs) || !q.verifs.length ||
            q.verifs.some(function(v){return !v.msg || typeof v.test !== "function";}))
           return erreur(id, "l’exercice « " + q.id + " » doit avoir une consigne, une solution et des vérifications.");
+        continue;
+      }
+      if(type === "js"){
+        if(!q.q || typeof q.depart !== "string" || typeof q.solution !== "string")
+          return erreur(id, "l’exercice « " + q.id + " » doit avoir une consigne (q), un code de départ et une solution.");
+        if(!Array.isArray(q.verifs) || !q.verifs.length ||
+           q.verifs.some(function(v){return !v.msg || (typeof v.test !== "function" && typeof v.dans !== "function");}))
+          return erreur(id, "l’exercice « " + q.id + " » doit avoir des vérifications { msg, test ou dans }.");
+        continue;
+      }
+      if(type === "projet"){
+        if(!q.titre || !Array.isArray(q.contenu) || !Array.isArray(q.projets) || !q.projets.length ||
+           q.projets.some(function(p){return !p.id || !p.titre || !p.fichiers || !Array.isArray(p.missions) || !Array.isArray(p.defis);}))
+          return erreur(id, "le projet « " + q.id + " » doit avoir un titre, un contenu et des projets complets.");
         continue;
       }
       if(type !== "choix") return erreur(id, "la question « " + q.id + " » a un type inconnu : " + type + ".");

@@ -501,3 +501,54 @@ pre.code{
   .panel{border:none;box-shadow:none;padding:0}
   .row,.hint,.strip,.top .lien{display:none}
 }
+
+/* ---------- atelier JavaScript (js/bac-js.js) ---------- */
+.js-barre{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;
+  padding:9px 12px;background:#EDF1F4;border-top:1px solid #D3DBE0;border-bottom:1px solid #D3DBE0;
+}
+.js-reponses{display:flex;align-items:center;gap:8px;flex:1 1 260px;font-size:.88rem;font-weight:700;color:var(--ink-soft)}
+.js-reponses .champ{flex:1;min-width:0;padding:6px 10px;font-size:.92rem}
+.atelier.js .apercu-cadre{height:200px}
+.console{
+  max-height:260px;min-height:56px;overflow-y:auto;
+  padding:10px 14px;background:#0E1621;color:#E3EAF1;
+  font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;line-height:1.55;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.console > div{padding:1px 0;border-bottom:1px solid #1C2836}
+.console-vide{margin:0;color:#8193A3;font-family:"Chivo",system-ui,sans-serif;font-size:.9rem}
+.console-vide code{background:#1C2836;border-color:#2C3B4C;color:#E3EAF1}
+.c-question,.c-alerte{color:#9CD3FF}
+.c-warn{color:#FFD479}
+.c-error,.c-erreur{color:#FF9A92}
+.c-erreur{font-family:"Chivo",system-ui,sans-serif;font-size:.92rem;padding:4px 0}
+.c-brut{display:block;color:#8193A3;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.78rem}
+.page-html{margin:10px 0 0;font-size:.92rem}
+.page-html summary{cursor:pointer;color:var(--wire);font-weight:700}
+.page-html pre.code{margin:8px 0 0;font-size:.82rem}
+
+/* ---------- projets de fin de module ---------- */
+.projets{margin:20px 0 0}
+.projet-emoji{flex:0 0 auto;font-size:2rem;line-height:1}
+.projet-detail{
+  margin:22px 0 0;padding:6px 20px 18px;
+  background:var(--key);border:1px solid var(--bevel);border-radius:8px;box-shadow:0 3px 0 var(--bevel);
+}
+.projet-detail h2{margin-top:14px}
+.projet-detail h3{font-size:1rem;font-weight:900;margin:22px 0 6px}
+.projet-detail ol,.projet-detail ul{margin:0;padding-left:1.4em}
+.projet-detail li{margin:4px 0}
+.projet-detail details{margin:20px 0 0}
+.projet-detail summary{cursor:pointer;color:var(--wire);font-weight:700}
+.projet-detail pre.code{margin-top:8px;max-height:420px;overflow:auto;font-size:.8rem}
+.projet-telecharger{margin:16px 0 0}
+.projet-telecharger .sub{margin:12px 0 0}
+.projet-telecharger .minikey{margin:4px 2px}
+.defis{list-style:none;padding-left:0 !important}
+.defis li{display:flex;gap:10px}
+.defis .etoiles{flex:0 0 4.4em;white-space:nowrap}
+/* Sur téléphone, le code dans le texte peut passer à la ligne plutôt que déborder. */
+@media (max-width:600px){
+  code{white-space:normal;overflow-wrap:anywhere}
+}

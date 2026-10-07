@@ -70,7 +70,8 @@ function reponseDe(t, qid){
 }
 
 // Une leçon se lit mais ne se note pas.
-function note(o){ return o.type !== "lecon"; }
+// Une leçon se lit et un projet se choisit : ni l’un ni l’autre ne se note.
+function note(o){ return o.type !== "lecon" && o.type !== "projet"; }
 
 // etapes / faites : avancement (leçons comprises) ; total / bons : score.
 function bilanDe(t){
@@ -437,7 +438,7 @@ function charger(t){
   ordre = resoudre(qcm, t);
   reps = ordre.map(function(o){
     const r = reponseDe(t, o.id);
-    return r ? (o.type === "lecon" ? "lu" : r.juste) : null;
+    return r ? (note(o) ? r.juste : "lu") : null;
   });
   i = Math.max(0, reps.indexOf(null));
   repondu = false;
@@ -630,6 +631,8 @@ function afficher(){
 
   if(item.type === "lecon") afficherLecon(item);
   else if(item.type === "code") afficherCode(item);
+  else if(item.type === "js") afficherJs(item);
+  else if(item.type === "projet") afficherProjet(item);
   else if(item.type === "terminal") afficherTerminal(item);
   else if(tentative.examen) afficherExamen(item);
   else afficherChoix(item);
@@ -648,6 +651,9 @@ function afficherLecon(item){
         'Rien ne peut casser : c’est un terminal d’entraînement.</p><div id="terminal"></div>'
       : l.interactif
       ? '<h2>' + fmt(l.titreInteractif || "Essaie toi-même") + '</h2><div class="interactif" id="interactif"></div>'
+      : l.js !== undefined
+      ? '<h2>Essaie toi-même</h2><p class="sub">Modifie le code, puis clique sur ▶ Exécuter (ou <kbd>Ctrl</kbd> + <kbd>Entrée</kbd>). ' +
+        'Rien ne peut casser : essaie, trompe-toi, recommence !</p>' + pageHtml(l.page) + atelierJs("exemple", l.js, l)
       : l.exemple
         ? '<h2>Essaie toi-même</h2><p class="sub">' +
           (l.apercu === false ? 'Modifie le texte librement.' : 'Modifie le code : le résultat se met à jour tout de suite.') + '</p>' +
@@ -660,6 +666,7 @@ function afficherLecon(item){
   const essayer = suivreEssais(l.essais);
   if(l.terminal) Terminal.monter(document.getElementById("terminal"), { fs:l.terminal, auChangement:essayer });
   else if(l.interactif) l.interactif(document.getElementById("interactif"), essayer);
+  else if(l.js !== undefined) brancherJs("exemple", l.js, l, essayer);
   else if(l.exemple) brancherEditeur("exemple", l.exemple, essayer);
   repondu = true;   // Entrée passe à la suite
   brancherSuivant(function(){
@@ -910,6 +917,244 @@ function afficherTerminal(item){
   aide('Tape tes commandes dans le terminal : la mission se coche toute seule');
 }
 
+/* ---------- JavaScript : atelier, exercices et projets ---------- */
+function pageHtml(page){
+  if(!page) return "";
+  return '<details class="page-html"><summary>Voir le HTML de la page</summary><pre class="code">' + esc(page.trim()) + '</pre></details>';
+}
+
+// Éditeur de JavaScript, avec le bouton Exécuter, la page (s’il y en a une) et la console.
+// o : { page, reponses } ; les réponses simulées de prompt() se modifient dans un champ.
+function atelierJs(id, code, o){
+  const lignes = code.split("\n").length;
+  return '<div class="atelier js">' +
+    '<div class="atelier-tete"><span>JavaScript</span>' +
+      '<button class="lien" id="' + id + '-reset">Remettre le code de départ</button></div>' +
+    '<textarea class="code-saisie" id="' + id + '" rows="' + Math.min(20, Math.max(5, lignes + 1)) + '"' +
+      ' spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code JavaScript">' +
+      esc(code) + '</textarea>' +
+    '<div class="js-barre"><button class="minikey wire" type="button" id="' + id + '-run">▶ Exécuter</button>' +
+      (o.reponses ? '<label class="js-reponses">💬 Réponses à <code>prompt</code> :' +
+        '<input class="champ" id="' + id + '-rep" value="' + esc(o.reponses.join(", ")) + '" autocomplete="off"' +
+        ' title="Ce que l’utilisateur répond, dans l’ordre, séparé par des virgules"></label>' : '') +
+    '</div>' +
+    (o.page
+      ? '<div class="atelier-tete"><span>La page</span></div>' +
+        '<div class="apercu-cadre"><iframe class="apercu js-page" id="' + id + '-page" title="La page"></iframe></div>'
+      : '<iframe id="' + id + '-page" hidden title="Exécution du code"></iframe>') +
+    '<div class="atelier-tete"><span>Console</span><span class="sub">ce que ton programme écrit</span></div>' +
+    '<div class="console" id="' + id + '-console" aria-live="polite"></div>' +
+  '</div>';
+}
+
+// Le résultat d’une exécution, tel que le reçoivent les tests : logs (textes), erreurs, html de la
+// page, code tapé et code sans commentaires (sans).
+function resultatJs(r, code){
+  return { logs:r.logs.map(function(l){ return l.x; }), erreurs:r.erreurs, html:r.html,
+           code:code, sans:BacJs.sansCommentaires(code), sonde:r.sonde };
+}
+
+function consoleHtml(r){
+  if(!r.logs.length && !r.erreurs.length)
+    return '<p class="console-vide">Rien d’affiché pour l’instant. Utilise <code>console.log()</code> pour écrire ici.</p>';
+  return r.logs.map(function(l){ return '<div class="c-' + l.t + '">' + esc(l.x) + '</div>'; }).join("") +
+    r.erreurs.map(function(e){
+      return '<div class="c-erreur">❌ ' + (e.ligne ? '<b>Ligne ' + e.ligne + '</b> : ' : '') + esc(BacJs.expliquer(e)) +
+             (/^__/.test(e.message) ? '' : '<span class="c-brut">' + esc(e.message.replace(/^Uncaught\s+/, "")) + '</span>') + '</div>';
+    }).join("");
+}
+
+// surEtat(r) est appelé après chaque exécution, et quand la page change (clic, minuterie…).
+function brancherJs(id, depart, o, surEtat){
+  brancherEditeur(id, depart);   // tabulation et remise à zéro
+  const ta = document.getElementById(id);
+  const iframe = document.getElementById(id + "-page");
+  const sortie = document.getElementById(id + "-console");
+  const champ = document.getElementById(id + "-rep");
+  function reponses(){
+    return champ ? champ.value.split(",").map(function(x){ return x.trim(); }).filter(function(x){ return x !== ""; }) : [];
+  }
+  function executer(){
+    const code = ta.value;
+    sortie.innerHTML = '<p class="console-vide">…</p>';
+    BacJs.monter(iframe, { code:code, page:o.page, reponses:reponses(), surEtat:function(r){
+      sortie.innerHTML = consoleHtml(r);
+      sortie.scrollTop = sortie.scrollHeight;
+      if(surEtat) surEtat(resultatJs(r, code));
+    } });
+  }
+  surClic(id + "-run", executer);
+  surClic(id + "-reset", function(){ ta.value = depart; executer(); ta.focus(); });
+  ta.addEventListener("keydown", function(ev){
+    if(ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)){ ev.preventDefault(); executer(); }
+  });
+  if(champ) champ.addEventListener("keydown", function(ev){ if(ev.key === "Enter"){ ev.preventDefault(); executer(); } });
+  executer();
+  return {
+    code:function(){ return ta.value; },
+    remplacer:function(code){ ta.value = code; executer(); },
+    executer:executer
+  };
+}
+
+// Vérifie un exercice : chaque vérification a sa propre exécution cachée quand elle a besoin
+// d’une sonde (dans), d’un code lancé avant (avant) ou de réponses à prompt (reponses).
+async function verifierJs(ex, code){
+  const base = resultatJs(await BacJs.executer({ code:code, page:ex.page, reponses:ex.reponses || [] }), code);
+  const res = await Promise.all(ex.verifs.map(async function(v){
+    let ok = false;
+    try{
+      if(v.dans || v.avant || v.reponses){
+        const r = resultatJs(await BacJs.executer({ code:code, page:ex.page, reponses:v.reponses || ex.reponses || [],
+                                                     avant:v.avant, sonde:v.dans }), code);
+        ok = (!v.dans || r.sonde === true) && (!v.test || !!v.test(r));
+      } else ok = !!v.test(base);
+    }catch(e){ ok = false; }
+    return { ok:ok, msg:v.msg };
+  }));
+  res.base = base;
+  return res;
+}
+
+function afficherJs(item){
+  const ex = item.src;
+  panel.innerHTML =
+    '<p class="theme">' + fmt(ex.etiquette || "Exercice") + '</p>' +
+    '<p class="question">' + fmt(ex.q) + '</p>' +
+    pageHtml(ex.page) +
+    atelierJs("code", ex.depart, ex) +
+    '<p class="sub" style="margin:18px 0 6px"><b>Ce qui sera vérifié</b></p>' +
+    '<ul class="verifs" id="verifs">' +
+      listeVerifs(ex.verifs.map(function(v){ return { ok:null, msg:v.msg }; })) +
+    '</ul>' +
+    '<div id="apres"></div>' +
+    '<div class="row" id="actions" style="gap:12px">' +
+      '<button class="bigkey" id="solution">Voir la solution</button>' +
+      '<button class="bigkey wire" id="verifier">Vérifier</button>' +
+    '</div>';
+
+  const ed = brancherJs("code", ex.depart, ex);
+  const verifs = document.getElementById("verifs");
+  const apres = document.getElementById("apres");
+  let essais = 0, occupe = false;
+
+  function terminer(juste, code){
+    if(!enregistrer({ code:code, juste:juste, essais:essais })) return;
+    repondu = true;
+    reps[i] = juste;
+    dessinerStrip();
+    document.getElementById("actions").remove();
+    apres.innerHTML =
+      '<div class="verdict ' + (juste ? "good" : "bad") + '">' +
+        '<b>' + (juste ? "Bravo, ton programme fonctionne !" : "Voici une solution possible, dans l’éditeur") + '</b>' +
+        '<p>' + fmt(ex.e || "") + '</p>' +
+      '</div>' +
+      boutonSuivant("Étape suivante");
+    brancherSuivant().focus();
+    aide('Tu peux encore modifier le code pour expérimenter · <kbd>Entrée</kbd> sur le bouton pour continuer');
+  }
+
+  surClic("verifier", async function(){
+    if(occupe || repondu) return;
+    occupe = true;
+    essais++;
+    ed.executer();
+    const code = ed.code();
+    const res = await verifierJs(ex, code);
+    occupe = false;
+    verifs.innerHTML = listeVerifs(res);
+    if(res.every(function(r){ return r.ok; })) return terminer(true, code);
+    const err = res.base.erreurs[0];
+    apres.innerHTML =
+      '<div class="verdict bad"><b>Pas encore</b>' +
+      (err ? '<p>Ton programme s’arrête sur une erreur' + (err.ligne ? ' à la ligne ' + err.ligne : '') + ' : ' + esc(BacJs.expliquer(err)) + '</p>' : '') +
+      '<p>Corrige les points marqués d’une croix, puis vérifie à nouveau. Tu peux essayer autant de fois que tu veux.</p></div>';
+  });
+
+  surClic("solution", async function(){
+    if(occupe || repondu) return;
+    occupe = true;
+    const code = ed.code();
+    ed.remplacer(ex.solution);
+    verifs.innerHTML = listeVerifs(await verifierJs(ex, ex.solution));
+    terminer(false, code);
+  });
+
+  aide('Écris ton programme, clique sur ▶ Exécuter pour l’essayer, puis sur Vérifier');
+}
+
+// Projet de fin de module : trois projets au choix, à télécharger pour Visual Studio Code.
+function afficherProjet(item){
+  const pj = item.src;
+  const deja = reponseDe(tentative, item.id);
+  panel.innerHTML =
+    '<p class="theme">' + fmt(pj.etiquette || "🚀 Projet final") + '</p>' +
+    '<h1 class="lecon">' + fmt(pj.titre) + '</h1>' +
+    pj.contenu.map(function(c){ return '<p>' + fmt(c) + '</p>'; }).join("") +
+    '<div class="keys projets" id="projets">' + pj.projets.map(function(p, k){
+      return '<button class="key projet-carte" data-p="' + k + '" aria-pressed="false">' +
+             '<span class="projet-emoji" aria-hidden="true">' + p.emoji + '</span>' +
+             '<span class="corps"><b>' + esc(p.titre) + '</b><br><span class="sub">' + fmt(p.accroche) + '</span></span></button>';
+    }).join("") + '</div>' +
+    '<div id="projet-detail"></div>' +
+    boutonSuivant("J’ai choisi mon projet, on continue");
+
+  let choisi = null;
+  function montrer(k){
+    choisi = pj.projets[k];
+    panel.querySelectorAll(".projet-carte").forEach(function(b){
+      const on = +b.dataset.p === k;
+      b.classList.toggle("picked-ok", on);
+      b.setAttribute("aria-pressed", on);
+    });
+    const p = choisi, module = qcm;
+    const fichiers = ProjetJs.fichiers(p, module);
+    document.getElementById("projet-detail").innerHTML =
+      '<div class="projet-detail">' +
+        '<h2>' + p.emoji + ' ' + esc(p.titre) + '</h2>' +
+        '<p>' + fmt(p.description) + '</p>' +
+        '<div class="projet-telecharger">' +
+          '<button class="bigkey wire" type="button" id="zip">📦 Télécharger le projet (.zip)</button>' +
+          '<p class="sub">ou fichier par fichier : ' + fichiers.map(function(f, n){
+            return '<button class="minikey" type="button" data-f="' + n + '">⬇ ' + esc(f.nom) + '</button>';
+          }).join(" ") + '</p>' +
+        '</div>' +
+        '<h3>🚀 Pour commencer, avec Visual Studio Code</h3>' +
+        '<ol>' + ProjetJs.demarrer(p).map(function(t){ return '<li>' + fmt(t) + '</li>'; }).join("") + '</ol>' +
+        '<h3>✅ Les missions, dans l’ordre</h3>' +
+        '<ol>' + p.missions.map(function(t){ return '<li>' + fmt(t) + '</li>'; }).join("") + '</ol>' +
+        '<h3>🏆 Les défis</h3>' +
+        '<ul class="defis">' + p.defis.map(function(d){
+          return '<li><span class="etoiles" aria-label="' + d.n + ' étoile' + (d.n > 1 ? 's' : '') + '">' + ProjetJs.ETOILES[d.n] + '</span><span>' + fmt(d.texte) + '</span></li>';
+        }).join("") + '</ul>' +
+        '<h3>🎨 Idées pour le rendre unique</h3>' +
+        '<ul>' + p.idees.map(function(t){ return '<li>' + fmt(t) + '</li>'; }).join("") + '</ul>' +
+        '<details><summary>👀 Voir le code de départ (script.js)</summary><pre class="code">' + esc(p.fichiers["script.js"] || "") + '</pre></details>' +
+      '</div>';
+    surClic("zip", function(){
+      Zip.telecharger(p.id + ".zip", Zip.creer(fichiers.map(function(f){ return { nom:p.id + "/" + f.nom, contenu:f.contenu }; })));
+    });
+    document.querySelectorAll("[data-f]").forEach(function(b){
+      b.onclick = function(){
+        const f = fichiers[+b.dataset.f];
+        Zip.telecharger(f.nom, new Blob([f.contenu], { type:"text/plain;charset=utf-8" }));
+      };
+    });
+  }
+  panel.querySelectorAll(".projet-carte").forEach(function(b){
+    b.onclick = function(){ montrer(+b.dataset.p); };
+  });
+  const avant = deja && pj.projets.findIndex(function(p){ return p.id === deja.projet; });
+  if(avant >= 0) montrer(avant);
+
+  repondu = true;
+  brancherSuivant(function(){
+    if(!enregistrer({ lu:true, projet:choisi ? choisi.id : null })) return false;
+    reps[i] = "lu";
+  });
+  aide('Choisis un projet, télécharge-le, puis ouvre-le dans Visual Studio Code');
+}
+
 /* ---------- résultat ---------- */
 function resultat(){
   const notes = ordre.map(function(o, n){return { o:o, n:n };}).filter(function(x){return note(x.o);});
@@ -928,7 +1173,7 @@ function resultat(){
     const o = x.o;
     const rep = reponseDe(tentative, o.id);
     if(rep && rep.juste) return null;
-    if(o.type === "code") return { q:o.q, solution:o.src.solution, e:o.e || "" };
+    if(o.type === "code" || o.type === "js") return { q:o.q, solution:o.src.solution, e:o.e || "" };
     if(o.type === "terminal") return { q:o.q, solution:Terminal.texteSolution(o.src.solution), e:o.e || "" };
     return { q:o.q, r:o.r[o.b], e:o.e, choix: rep ? o.src.r[rep.choix] : null };
   }).filter(Boolean);
@@ -988,7 +1233,7 @@ function resultat(){
 document.addEventListener("keydown", function(ev){
   if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
   if(ev.target && /^(TEXTAREA|INPUT|SELECT)$/.test(ev.target.tagName)) return;
-  if(ev.target && ev.target.closest && ev.target.closest(".interactif")) return;   // les jeux gardent leurs touches
+  if(ev.target && ev.target.closest && ev.target.closest(".interactif, .atelier, .projet-detail")) return;   // les jeux et les ateliers gardent leurs touches
   const k = ev.key.toLowerCase();
   const examen = tentative && tentative.examen && i >= 0;
   if(!repondu && panel.querySelector(".key[data-n]")){

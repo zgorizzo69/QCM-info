@@ -14,6 +14,17 @@ QCM disponibles:
   `mkdir`, `touch`, `cat`, `nano` dans un terminal simulé, et édition de texte.
 - **Les bases du HTML** (`qcm/html.js`) : leçons, questions et exercices de code en direct.
 - **L’atelier CSS** (`qcm/css.js`) : leçons et défis créatifs pour décorer ses pages.
+- **JavaScript**, en cinq modules progressifs (pour les moins de 14 ans, sans programmation objet) :
+  1. **Premiers pas** (`qcm/js-1.js`) : `console.log`, calculs, variables, textes, hasard ;
+  2. **Prendre des décisions** (`qcm/js-2.js`) : comparaisons, `prompt`, `if` / `else`, `&&` `||` `!` ;
+  3. **Répéter** (`qcm/js-3.js`) : boucles `for` et `while`, tableaux ;
+  4. **Les fonctions** (`qcm/js-4.js`) : paramètres, `return`, fonctions qui en utilisent d’autres ;
+  5. **Rendre la page vivante** (`qcm/js-5.js`) : le DOM, les clics, les champs, créer des éléments.
+
+  Chaque module se termine par un **projet au choix** (trois par module) à télécharger en `.zip` et à
+  réaliser dans Visual Studio Code : une page prête à l’emploi, un `script.js` de départ, un
+  `README.md` avec les missions, des défis ⭐ à ⭐⭐⭐ et des idées. Les projets du module 5 importent
+  une librairie (`canvas-confetti`) depuis un CDN.
 
 ## Utilisation
 
@@ -76,6 +87,41 @@ Pour tester en local : ouvrir `index.html`, ou lancer `python3 -m http.server` e
 
 Pour chaque question : `t` est l’id du thème, `r` les réponses (de 2 à 6), `b` l’indice de la bonne
 réponse dans `r` (l’ordre est mélangé à l’affichage), `e` l’explication montrée après la réponse.
+
+### Leçons et exercices de JavaScript
+
+Le code JavaScript des élèves s’exécute dans un bac à sable (`js/bac-js.js`) : une iframe isolée
+(`sandbox="allow-scripts"`, sans accès à l’application) qui recopie `console.log`, traduit les
+erreurs en français avec leur numéro de ligne, simule `prompt` et arrête les boucles infinies.
+
+```js
+// Leçon : un atelier exécutable (page et reponses sont facultatives)
+{ id:"clic-l1", t:"clic", type:"lecon", titre:"Réagir aux clics", contenu:[…],
+  page:`<button id="bouton">Clique-moi</button>`,      // le HTML de la page
+  js:`document.querySelector("#bouton")…`,              // le code de départ
+  reponses:["Sam", "12"],                               // réponses simulées de prompt()
+  essais:[{ texte:"…", test:function(r){ … } }] }       // r : { logs, erreurs, html, code, sans }
+
+// Exercice vérifié automatiquement
+{ id:"crier-c1", t:"parametres", type:"js", q:"Crée la fonction crier(message, fois)…",
+  depart:"// …", solution:"function crier(message, fois) { … }",
+  verifs:[
+    { msg:"crier existe", dans:function(p){ return typeof crier === "function"; } },
+    { msg:"Avec 12, affiche 17", reponses:["12"], test:function(r){ return /17/.test(r.logs.join()); } },
+    { msg:"Toujours 6 au maximum", avant:function(){ Math.random = function(){ return 0.9999; }; },
+      dans:function(){ return de === 6; } }
+  ] }
+```
+
+`test(r)` regarde le résultat d’une exécution ; `dans(p)` est une sonde lancée **dans** la page,
+après le code de l’élève : elle voit ses variables et ses fonctions, et peut utiliser
+`p.cliquer(sel)`, `p.taper(sel, valeur)`, `p.texte(sel)`, `p.el(sel)`, `p.logs()`. `avant` est lancé
+avant le code (par exemple pour fixer le hasard), `reponses` donne d’autres réponses à `prompt`.
+Les sondes sont recopiées dans l’iframe : elles ne doivent utiliser aucune variable extérieure.
+
+Le projet de fin de module est une étape `type:"projet"` avec trois projets ; leurs fichiers sont
+préparés avec `ProjetJs.console({…})` (projets « console ») ou écrits directement, et le README est
+généré par `js/projets-js.js`. Le `.zip` est fabriqué dans le navigateur (`js/zip.js`).
 
 ### Leçons et exercices de code
 
