@@ -368,7 +368,7 @@ function ecranIntro(def){
       (ec ? '<button class="bigkey" id="reprendre">Reprendre — ' + b.faites + ' / ' + b.etapes + '</button>' : '') +
       '<button class="bigkey wire" id="go"></button>' +
     '</div>' +
-    (nbExamen ? '<div class="encart">' +
+    (nbExamen ? '<div class="encart" id="encartExamen">' +
       '<h2>📝 Examen blanc</h2>' +
       '<p>' + nbExamen + ' questions tirées au hasard parmi tous les blocs de ce QCM. Pas de correction en cours de route : ' +
         'ta note ne s’affiche qu’à la fin, comme pour un vrai contrôle.</p>' +
@@ -460,6 +460,19 @@ function dessinerStrip(){
 function aide(texte){
   hint.innerHTML = texte + ' · <button class="lien" id="quitter">Retour aux QCM</button>';
   surClic("quitter", ecranChoix);
+}
+
+// Depuis un QCM en cours : la page du QCM, défilée jusqu’à l’encadré de l’examen blanc.
+// Le passage en cours reste enregistré et pourra être repris.
+function allerExamen(){
+  ecranIntro(qcm);
+  const encart = document.getElementById("encartExamen");
+  if(encart){
+    encart.scrollIntoView({ behavior:"smooth", block:"center" });
+    encart.classList.add("eclaire");
+    const bouton = document.getElementById("examenReprendre") || document.getElementById("examen");
+    if(bouton) bouton.focus({ preventScroll:true });
+  }
 }
 
 // Enregistre la réponse de l’étape en cours ; renvoie false si la session a disparu.
@@ -608,6 +621,10 @@ function afficher(){
   const theme = qcm.themes.find(function(t){return t.id===item.t;});
   topTitle.textContent = tentative.examen ? "Examen blanc · " + qcm.titre : theme.nom;
   topCount.textContent = (qcm.avecLecons && !tentative.examen ? "Étape " : "Question ") + (i+1) + " sur " + ordre.length;
+  if(!tentative.examen && questionsExamen(qcm).length){
+    topCount.insertAdjacentHTML("beforeend", ' · <button class="lien" id="versExamen">📝 Examen blanc</button>');
+    surClic("versExamen", allerExamen);
+  }
   dessinerStrip();
   repondu = false;
 
@@ -629,6 +646,8 @@ function afficherLecon(item){
     (l.terminal
       ? '<h2>Essaie toi-même</h2><p class="sub">Clique dans le terminal, tape une commande puis appuie sur Entrée. ' +
         'Rien ne peut casser : c’est un terminal d’entraînement.</p><div id="terminal"></div>'
+      : l.interactif
+      ? '<h2>' + fmt(l.titreInteractif || "Essaie toi-même") + '</h2><div class="interactif" id="interactif"></div>'
       : l.exemple
         ? '<h2>Essaie toi-même</h2><p class="sub">' +
           (l.apercu === false ? 'Modifie le texte librement.' : 'Modifie le code : le résultat se met à jour tout de suite.') + '</p>' +
@@ -640,6 +659,7 @@ function afficherLecon(item){
 
   const essayer = suivreEssais(l.essais);
   if(l.terminal) Terminal.monter(document.getElementById("terminal"), { fs:l.terminal, auChangement:essayer });
+  else if(l.interactif) l.interactif(document.getElementById("interactif"), essayer);
   else if(l.exemple) brancherEditeur("exemple", l.exemple, essayer);
   repondu = true;   // Entrée passe à la suite
   brancherSuivant(function(){
@@ -950,11 +970,13 @@ function resultat(){
       : '<h2>Aucune erreur. Rien à revoir.</h2>') +
     '<div class="row" style="gap:12px">' +
       '<button class="bigkey" id="print">Imprimer</button>' +
+      (!examen && questionsExamen(qcm).length ? '<button class="bigkey" id="versExamen">📝 Examen blanc</button>' : '') +
       '<button class="bigkey wire" id="again">' + (examen ? 'Nouvel examen blanc' : 'Recommencer') + '</button>' +
     '</div>';
 
   surClic("retour", ecranChoix);
   surClic("print", function(){ window.print(); });
+  surClic("versExamen", allerExamen);
   surClic("again", function(){
     if(examen) return commencerExamen(qcm);
     themesChoisis[qcm.id] = new Set(tentative.themes);
@@ -966,6 +988,7 @@ function resultat(){
 document.addEventListener("keydown", function(ev){
   if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
   if(ev.target && /^(TEXTAREA|INPUT|SELECT)$/.test(ev.target.tagName)) return;
+  if(ev.target && ev.target.closest && ev.target.closest(".interactif")) return;   // les jeux gardent leurs touches
   const k = ev.key.toLowerCase();
   const examen = tentative && tentative.examen && i >= 0;
   if(!repondu && panel.querySelector(".key[data-n]")){

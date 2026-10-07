@@ -4,8 +4,9 @@
 
    Une étape (élément de « questions ») est de l’un de ces types :
      - "choix" (par défaut) : question à choix multiple { q, r, b, e } ;
-     - "lecon" : explication non notée { titre, contenu:[texte | {code}], exemple? | terminal?,
+     - "lecon" : explication non notée { titre, contenu:[texte | {code}], exemple? | terminal? | interactif?,
                  essais?:[texte | {texte, test}], lien? } ;
+                 interactif(zone, signaler) dessine un jeu dans la zone (voir js/ia-jeux.js) ;
      - "code"  : exercice de HTML en direct { q, depart, solution, verifs:[{msg, test(doc, code)}], e } ;
                  avec apercu:false, c’est un simple éditeur de texte (doc vaut null) ;
      - "terminal" : exercice dans le terminal simulé { q, fs, solution:[commandes], verifs:[{msg, test(etat)}], e }. */

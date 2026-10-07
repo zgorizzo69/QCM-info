@@ -7,7 +7,9 @@ apprendre à coder. C’est un site statique, sans installation ni serveur : il 
 QCM disponibles:
 
 - **Ce que tu sais déjà sur l’ordinateur** (`qcm/positionnement.js`) : QCM de positionnement.
-- **Intelligence artificielle et sécurité en ligne** (`qcm/ia-securite.js`).
+- **Intelligence artificielle et sécurité en ligne** (`qcm/ia-securite.js`) : IA et LLM, tokens, jeu du
+  mot suivant, entraînement, inférence, hallucinations, diffusion d’images, puis sécurité en ligne et
+  vérification de l’information. Les leçons contiennent de petits jeux (`js/ia-jeux.js`).
 - **Fichiers, dossiers et terminal** (`qcm/fichiers.js`) : arborescence, commandes `ls`, `cd`, `pwd`,
   `mkdir`, `touch`, `cat`, `nano` dans un terminal simulé, et édition de texte.
 - **Les bases du HTML** (`qcm/html.js`) : leçons, questions et exercices de code en direct.
@@ -24,7 +26,7 @@ QCM disponibles:
    meilleure note) et la moyenne générale. La section **Examens blancs** donne la note du dernier
    examen blanc de chaque QCM. L’historique liste les passages déjà terminés.
 3. **Choix des blocs** : on peut passer tous les thèmes du QCM ou seulement certains. Un QCM interrompu
-   peut être repris. En bas de la page, le bouton **Passer l’examen blanc** tire au hasard 10 questions
+   peut être repris. En bas de la page (et depuis le lien « 📝 Examen blanc » en haut de chaque étape), le bouton **Passer l’examen blanc** tire au hasard 10 questions
    à choix parmi tous les blocs (les leçons et les exercices de code ou de terminal n’en font pas
    partie). Aucune correction n’est montrée avant la fin, et la note est donnée sur 20. Chaque QCM n’a
    qu’une note d’examen blanc : un nouvel examen terminé remplace le précédent.
@@ -110,6 +112,11 @@ essais:[
 ],
 lien:"https://www.w3schools.com/css/css_syntax.asp"
 ```
+
+Une leçon peut aussi contenir un petit jeu : `interactif:function(zone, signaler){ … }` le dessine
+dans `zone` et appelle `signaler(etat)` après chaque action, ce qui coche les essais dont
+`test(etat)` réussit (`titreInteractif` change le titre affiché au-dessus). Les jeux du cours sur
+l’IA sont dans `js/ia-jeux.js` : `IAJeux.tokens(zone, signaler)`, `IAJeux.diffusion(…)`…
 
 Avec `apercu:false`, l’exemple ou l’exercice est un simple éditeur de texte (le test reçoit
 `doc = null`). Pour le terminal simulé (`js/terminal.js`), une leçon donne `terminal:{…}` (le contenu
