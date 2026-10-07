@@ -235,7 +235,7 @@ console.log("Mon corps : " + enFahrenheit(37) + " °F 🌡️");`,
         e:"98,6 °F : c’est la température normale du corps humain pour un Américain. Avec `return`, la fonction peut servir pour n’importe quelle température." },
 
       { id:"retour-c2", t:"retour", type:"js",
-        q:"🔢 Crée une fonction `estPair(nombre)` qui **renvoie** `true` si le nombre est pair, et `false` sinon. Indice : un nombre est pair si le reste de sa division par 2 vaut 0.",
+        q:"🔢 Crée une fonction `estPair(nombre)` qui **renvoie** `true` si le nombre est pair, et `false` sinon. Rappel : le modulo `nombre % 2` donne ce qui reste quand on partage le nombre entre 2 : **0** pour un nombre pair (`4 % 2` vaut 0), **1** pour un impair (`7 % 2` vaut 1).",
         depart:"// Crée la fonction estPair(nombre)\n",
         verifs:[
           { msg:"`estPair(4)` renvoie true", dans:function(){ return estPair(4) === true; } },

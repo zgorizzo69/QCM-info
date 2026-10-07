@@ -41,7 +41,14 @@ QCM disponibles:
    à choix parmi tous les blocs (les leçons et les exercices de code ou de terminal n’en font pas
    partie). Aucune correction n’est montrée avant la fin, et la note est donnée sur 20. Chaque QCM n’a
    qu’une note d’examen blanc : un nouvel examen terminé remplace le précédent.
-4. **Questions**, puis **résultat** par thème, avec la liste des questions à revoir.
+4. **Questions**, puis **résultat** par thème, avec la liste des questions à revoir. La barre de
+   progression, en haut, est cliquable : on peut revenir sur une étape déjà faite (ou aller jusqu’à
+   la première étape à faire). Une question ou un exercice déjà terminé est montré avec la réponse
+   donnée, sans pouvoir changer la note ; pendant un examen blanc, on peut en revanche revenir
+   changer une réponse avant de terminer.
+
+Les éditeurs de code (HTML, CSS et JavaScript) ont un sélecteur d’emojis, qui insère l’emoji choisi à
+l’endroit du curseur. Un QCM peut le désactiver avec `emojis: false`.
 
 Dans les cours interactifs, chaque bloc commence par une **leçon** avec un exemple modifiable (le
 résultat s’affiche en direct) ou un terminal d’entraînement, une liste « À toi d’essayer » de petites

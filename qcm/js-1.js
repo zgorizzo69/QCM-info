@@ -12,7 +12,6 @@
       "🚀 Bienvenue dans le premier module JavaScript ! Chaque bloc commence par une leçon avec du code que tu peux modifier et exécuter, puis viennent des questions et un exercice vérifié automatiquement.",
       "🏁 À la fin du module, tu choisis un projet parmi trois, tu le télécharges et tu le réalises dans Visual Studio Code. Les modules suivants s’appuient sur celui-ci : avance dans l’ordre !"
     ],
-    emojis: true,   // sélecteur d’emojis dans les ateliers JavaScript de ce module
     aideMemoire: `
 console.log("Bonjour !");          // afficher un message
 console.log(3 + 4);                // afficher un calcul : 7
@@ -100,9 +99,9 @@ console.log("Mon animal préféré : le panda 🐼");`,
 -   soustraction     50 - 8    → 42
 *   multiplication   6 * 7     → 42   (pas de ×, c'est l'étoile *)
 /   division         84 / 2    → 42
-%   reste            17 % 5    → 2    (17 bonbons pour 5 : il en reste 2)` },
+%   modulo (reste)   17 % 5    → 2    (expliqué juste après 🍬)` },
           "🥇 Comme en maths, la multiplication et la division passent **avant** l’addition et la soustraction : `2 + 3 * 4` vaut 14. Pour changer l’ordre, on met des **parenthèses** : `(2 + 3) * 4` vaut 20.",
-          "🍬 Le signe `%` (« modulo ») donne le **reste** de la division. Il est très pratique : un nombre est pair si `nombre % 2` vaut 0.",
+          "🍬 Le signe `%` s’appelle le **modulo**. Tu ne le connais pas ? C’est normal : on le découvre en détail dans la leçon suivante, avec des bonbons !",
           "⚠️ Piège : `\"2\" + \"2\"` donne `\"22\"` ! Avec des guillemets, ce sont des textes, et le `+` les **colle** au lieu de les additionner."
         ],
         js:
@@ -111,7 +110,6 @@ console.log(7 * 6);
 console.log(100 / 4);
 console.log(2 + 3 * 4);      // la multiplication d'abord !
 console.log((2 + 3) * 4);    // les parenthèses d'abord !
-console.log(17 % 5);         // le reste : 2 bonbons pour toi 🍬
 console.log("2" + "2");      // attention, ce sont des textes !`,
         essais:[
           { texte:"Calcule combien de secondes il y a dans une heure (60 × 60).", test:function(r){ return r.logs.indexOf("3600") >= 0; } },
@@ -128,12 +126,55 @@ console.log("2" + "2");      // attention, ce sont des textes !`,
         r:["55", "10", "5 + 5", "Une erreur"], b:0,
         e:"Ce sont deux textes (entre guillemets) : le + les colle l’un à l’autre." },
 
-      { id:"calculs-3", t:"calculs", q:"Que vaut `20 % 6` ?",
+      { id:"calculs-l2", t:"calculs", type:"lecon", titre:"Le modulo % : ce qui reste après un partage",
+        contenu:[
+          "🍬 Le signe `%`, appelé **modulo**, répond à une seule question : « si je partage **équitablement**, combien en **reste-t-il** ? »",
+          "👫 Exemple : tu as **17 bonbons** à partager entre **5 amis**. Chacun doit avoir le même nombre de bonbons, et on ne coupe pas les bonbons en morceaux ! Chacun en reçoit 3… et il en reste 2 dans ta main :",
+          { code:
+`17 bonbons à partager entre 5 amis :
+
+  Ami 1 : 🍬🍬🍬
+  Ami 2 : 🍬🍬🍬
+  Ami 3 : 🍬🍬🍬
+  Ami 4 : 🍬🍬🍬
+  Ami 5 : 🍬🍬🍬
+  Reste : 🍬🍬       ← c'est ça, le modulo : 17 % 5 vaut 2` },
+          "🧮 Pour le calculer de tête, en deux étapes : ① cherche le plus grand nombre de la table de 5 qui ne dépasse pas 17 : c’est **15** (5 × 3) ; ② enlève-le : 17 − 15 = **2**. Donc `17 % 5` vaut 2.",
+          "🏫 C’est la **division posée** de l’école primaire (la division euclidienne) : 17 = 5 × 3 + 2. Le 3 s’appelle le **quotient**, le 2 le **reste**. `%` donne le reste.",
+          { code:
+`17 / 5   →  3.4   la division « normale », avec une virgule
+17 % 5   →  2     le reste, quand chacun a reçu 3 bonbons entiers` },
+          "🎯 Deux cas à retenir : si le partage tombe juste, il ne reste rien : `20 % 5` vaut **0** (on dit que 20 est **divisible** par 5). Et s’il n’y a pas assez de bonbons pour tout le monde, tout reste dans ta main : `3 % 5` vaut **3**.",
+          "⚖️ Le modulo sert énormément en programmation. Par exemple, pour savoir si un nombre est **pair** : on le partage entre 2. S’il ne reste rien (`nombre % 2` vaut 0), il est pair ; s’il reste 1, il est impair.",
+          "⚠️ Attention, ici `%` n’a **rien à voir avec les pourcentages** ! En JavaScript, c’est seulement le reste d’un partage."
+        ],
+        js:
+`console.log(17 % 5);    // 17 bonbons pour 5 amis : il en reste 2 🍬
+console.log(20 % 5);    // partage parfait : il reste 0
+console.log(3 % 5);     // pas assez pour tout le monde : il reste 3
+console.log(10 % 2);    // 10 est pair : il reste 0
+console.log(7 % 2);     // 7 est impair : il reste 1`,
+        essais:[
+          { texte:"25 élèves font des équipes de 4 : combien d’élèves restent sans équipe ? Calcule `25 % 4`.", test:function(r){ return /25\s*%\s*4/.test(r.sans) && r.logs.indexOf("1") >= 0; } },
+          { texte:"Ton âge est-il pair ? Calcule `ton âge % 2` : 0 veut dire pair, 1 impair.", test:function(r){ return /\d+\s*%\s*2\b/.test(r.sans.replace(/10\s*%\s*2|7\s*%\s*2/g, "")); } },
+          "Calcule `100 % 7` de tête (cherche le plus grand nombre de la table de 7 qui ne dépasse pas 100), puis vérifie avec ▶ Exécuter."
+        ],
+        lien:"https://www.w3schools.com/js/js_arithmetic.asp" },
+
+      { id:"calculs-3", t:"calculs", q:"Que vaut `20 % 6` ? (Rappel : `%` donne ce qui reste quand on partage équitablement.)",
         r:["2", "3", "3,33", "120"], b:0,
-        e:"20 = 6 × 3 + 2 : le reste de la division est 2." },
+        e:"20 bonbons pour 6 amis : chacun en reçoit 3 (6 × 3 = 18), et il en reste 20 − 18 = 2." },
+
+      { id:"calculs-4", t:"calculs", q:"Que vaut `9 % 3` ?",
+        r:["0", "3", "1", "27"], b:0,
+        e:"9 bonbons pour 3 amis : chacun en reçoit 3, et il ne reste rien. Le partage tombe juste : 9 est divisible par 3." },
+
+      { id:"calculs-5", t:"calculs", q:"Un nombre est **pair** quand `nombre % 2` vaut…",
+        r:["0", "1", "2", "Le nombre lui-même"], b:0,
+        e:"Partager un nombre pair entre 2, ça tombe toujours juste : il ne reste rien. Pour un nombre impair, il reste 1." },
 
       { id:"calculs-c1", t:"calculs", type:"js",
-        q:"🍕 La fête des pizzas ! Il y a **4 pizzas** coupées chacune en **8 parts**, pour **6 amis**. Affiche avec des calculs (pas de résultat écrit à la main !) : le **nombre total** de parts, puis le **nombre de parts qui restent** quand chacun en a pris autant que possible (indice : `%`).",
+        q:"🍕 La fête des pizzas ! Il y a **4 pizzas** coupées chacune en **8 parts**, pour **6 amis**. Affiche avec des calculs (pas de résultat écrit à la main !) : le **nombre total** de parts, puis le **nombre de parts qui restent** quand chacun en a pris autant que possible (indice : le modulo `%` donne ce qui reste après un partage équitable).",
         depart:
 `// Le nombre total de parts :
 

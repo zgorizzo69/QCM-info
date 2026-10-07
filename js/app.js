@@ -440,22 +440,69 @@ function charger(t){
     const r = reponseDe(t, o.id);
     return r ? (note(o) ? r.juste : "lu") : null;
   });
-  i = Math.max(0, reps.indexOf(null));
+  i = reps.indexOf(null);   // -1 : tout est fait
   repondu = false;
+}
+
+// La barre de progression : une case par étape. On peut cliquer sur une étape déjà faite pour
+// la revoir, ou aller jusqu’à la première étape qui reste à faire (pas plus loin).
+function titreEtape(o){
+  const t = o.type === "lecon" || o.type === "projet" ? o.src.titre : o.q;
+  const court = String(t || "").replace(/[`*]/g, "");
+  return court.length > 70 ? court.slice(0, 68) + "…" : court;
 }
 
 function dessinerStrip(){
   strip.innerHTML = "";
-  const cache = tentative && tentative.examen && i >= 0;   // examen en cours : rien n’est dévoilé
-  ordre.forEach(function(_, n){
-    const el = document.createElement("i");
-    if(cache && reps[n] !== null) el.className = "lu";
-    else if(reps[n] === true) el.className = "ok";
-    else if(reps[n] === false) el.className = "no";
-    else if(reps[n] === "lu") el.className = "lu";
-    else if(n === i) el.className = "now";
-    strip.appendChild(el);
+  const cache = tentative && tentative.examen && !tentative.fin;   // examen en cours : rien n’est dévoilé
+  const aFaire = reps.indexOf(null);
+  const limite = aFaire < 0 ? ordre.length - 1 : aFaire;
+  ordre.forEach(function(o, n){
+    const b = document.createElement("button");
+    b.type = "button";
+    let classe = "", etat = "à faire";
+    if(reps[n] === null){ if(n === i) classe = "now"; }
+    else if(cache){ classe = "lu"; etat = "répondue"; }
+    else if(reps[n] === true){ classe = "ok"; etat = "réussie"; }
+    else if(reps[n] === false){ classe = "no"; etat = "ratée"; }
+    else { classe = "lu"; etat = o.type === "projet" ? "vue" : "lue"; }
+    b.className = "pas " + classe + (n === i ? " ici" : "");
+    const titre = (qcm.avecLecons && !tentative.examen ? "Étape " : "Question ") + (n + 1) + " · " + titreEtape(o) + " · " + etat;
+    b.title = titre;
+    b.setAttribute("aria-label", titre);
+    if(n === i) b.setAttribute("aria-current", "step");
+    if(n > limite) b.disabled = true;
+    else b.onclick = function(){ allerA(n); };
+    strip.appendChild(b);
   });
+}
+
+function allerA(n){
+  i = n;
+  afficher();
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+// La réponse déjà enregistrée pour l’étape affichée, si on revient sur une étape faite.
+function dejaFait(){
+  return reps[i] !== null && reps[i] !== undefined ? reponseDe(tentative, ordre[i].id) : null;
+}
+
+// Un exercice déjà terminé qu’on revoit : son résultat ne change plus, on peut seulement continuer.
+function revoirExercice(ex, juste, solutionTexte, codeEleve){
+  const actions = document.getElementById("actions");
+  if(actions) actions.remove();
+  repondu = true;
+  document.getElementById("apres").innerHTML =
+    '<div class="verdict ' + (juste ? "good" : "bad") + '">' +
+      '<b>' + (juste ? "✅ Exercice déjà réussi" : "📖 Exercice déjà fait : la solution t’a été montrée") + '</b>' +
+      (codeEleve ? '<p>Ce que tu avais tapé :</p><pre class="code">' + esc(codeEleve) + '</pre>' : '') +
+      (!juste && solutionTexte ? '<p>Une solution possible :</p><pre class="code">' + esc(solutionTexte) + '</pre>' : '') +
+      '<p>' + fmt(ex.e || "") + '</p>' +
+    '</div>' +
+    boutonSuivant("Étape suivante");
+  brancherSuivant();
+  aide('Tu revois une étape déjà faite · <kbd>Entrée</kbd> sur le bouton pour continuer');
 }
 
 function aide(texte){
@@ -507,12 +554,14 @@ function brancherSuivant(avant){
 /* ---------- éditeur de code en direct ---------- */
 function editeur(id, code, titre, avecApercu){
   const lignes = code.split("\n").length;
+  const avecEmojis = avecApercu !== false && !(qcm && qcm.emojis === false);
   return '<div class="atelier">' +
     '<div class="atelier-tete"><span>' + titre + '</span>' +
       '<button class="lien" id="' + id + '-reset">Remettre le code de départ</button></div>' +
     '<textarea class="code-saisie" id="' + id + '" rows="' + Math.min(18, Math.max(5, lignes + 1)) + '"' +
       ' spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="' + titre + '">' +
       esc(code) + '</textarea>' +
+    (avecEmojis ? '<div class="js-barre">' + boutonEmojis(id) + '</div>' + emojisHtml(id) : '') +
     (avecApercu === false ? '' :
       '<div class="atelier-tete"><span>Résultat</span><span class="sub">Tire le coin ↘ pour redimensionner</span></div>' +
       '<div class="apercu-cadre"><iframe class="apercu" id="' + id + '-apercu" title="Résultat du code"' +
@@ -552,6 +601,7 @@ function brancherEditeur(id, depart, apresRendu){
     echap = false;
   });
   surClic(id + "-reset", function(){ ta.value = depart; rendre(); ta.focus(); });
+  brancherEmojis(id, ta);
   rendre();
   return {
     code: function(){ return ta.value; },
@@ -616,7 +666,7 @@ function lienHtml(url){
 /* ---------- étapes ---------- */
 function afficher(){
   if(!ordre.length) return ecranChoix();
-  if(reps.indexOf(null) < 0) return resultat();
+  if(i < 0 || i >= ordre.length) return resultat();
   strip.style.display = "flex";
   const item = ordre[i];
   const theme = qcm.themes.find(function(t){return t.id===item.t;});
@@ -634,7 +684,7 @@ function afficher(){
   else if(item.type === "js") afficherJs(item);
   else if(item.type === "projet") afficherProjet(item);
   else if(item.type === "terminal") afficherTerminal(item);
-  else if(tentative.examen) afficherExamen(item);
+  else if(tentative.examen && !tentative.fin) afficherExamen(item);
   else afficherChoix(item);
 }
 
@@ -670,6 +720,7 @@ function afficherLecon(item){
   else if(l.exemple) brancherEditeur("exemple", l.exemple, essayer);
   repondu = true;   // Entrée passe à la suite
   brancherSuivant(function(){
+    if(reps[i] === "lu") return;
     if(!enregistrer({ lu:true })) return false;
     reps[i] = "lu";
   });
@@ -693,6 +744,9 @@ function afficherChoix(item){
   panel.querySelectorAll(".key").forEach(function(btn){
     btn.onclick = function(){ repondre(parseInt(btn.dataset.n,10)); };
   });
+
+  const deja = dejaFait();   // question déjà répondue : on montre la réponse donnée, sans la changer
+  if(deja) montrerReponse(item.p.indexOf(deja.choix));
 }
 
 function repondre(n){
@@ -703,7 +757,13 @@ function repondre(n){
   if(!enregistrer({ choix:item.p[n], juste:juste })) return;
   reps[i] = juste;
   dessinerStrip();
+  montrerReponse(n);
+}
 
+function montrerReponse(n){
+  repondu = true;
+  const item = ordre[i];
+  const juste = (n === item.b);
   panel.querySelectorAll(".key").forEach(function(btn){
     const k = parseInt(btn.dataset.n,10);
     btn.disabled = true;
@@ -755,6 +815,9 @@ function afficherExamen(item){
 
   aide('Choisis avec ' + item.r.map(function(_, n){return '<kbd>' + LETTRES[n] + '</kbd>';}).join(" ") +
        ', puis <kbd>Entrée</kbd> pour valider · Ta note s’affichera à la fin');
+
+  const deja = dejaFait();   // on est revenu en arrière : la réponse donnée reste choisie, on peut la changer
+  if(deja && item.p.indexOf(deja.choix) >= 0) choisirExamen(item.p.indexOf(deja.choix));
 }
 
 function choisirExamen(n){
@@ -789,10 +852,11 @@ function listeVerifs(res){
 
 function afficherCode(item){
   const ex = item.src;
+  const deja = dejaFait();
   panel.innerHTML =
     '<p class="theme">' + fmt(ex.etiquette || "Exercice") + '</p>' +
     '<p class="question">' + fmt(ex.q) + '</p>' +
-    editeur("code", ex.depart, ex.apercu === false ? "Ton texte" : "Ton code", ex.apercu !== false) +
+    editeur("code", deja && typeof deja.code === "string" ? deja.code : ex.depart, ex.apercu === false ? "Ton texte" : "Ton code", ex.apercu !== false) +
     '<p class="sub" style="margin:18px 0 6px"><b>Ce qui sera vérifié</b></p>' +
     '<ul class="verifs" id="verifs">' +
       listeVerifs(ex.verifs.map(function(v){return { ok:null, msg:v.msg };})) +
@@ -847,6 +911,10 @@ function afficherCode(item){
   });
 
   aide('Écris ton code, regarde le résultat, puis clique sur Vérifier');
+  if(deja){
+    revoirExercice(ex, reps[i] === true, ex.solution);
+    verifier(ex, ed).then(function(res){ verifs.innerHTML = listeVerifs(res); });
+  }
 }
 
 // Exercice dans le terminal : la liste se coche au fil des commandes, et l’exercice est réussi
@@ -915,6 +983,8 @@ function afficherTerminal(item){
   });
 
   aide('Tape tes commandes dans le terminal : la mission se coche toute seule');
+  const deja = dejaFait();
+  if(deja) revoirExercice(ex, reps[i] === true, Terminal.texteSolution(ex.solution), deja.code);
 }
 
 /* ---------- JavaScript : atelier, exercices et projets ---------- */
@@ -923,7 +993,7 @@ function pageHtml(page){
   return '<details class="page-html"><summary>Voir le HTML de la page</summary><pre class="code">' + esc(page.trim()) + '</pre></details>';
 }
 
-// Le sélecteur d’emojis de l’atelier JavaScript (pour les QCM qui ont emojis:true) :
+// Le sélecteur d’emojis des éditeurs de code (sauf pour un QCM qui a emojis:false) :
 // un clic insère l’emoji à l’endroit du curseur dans le code.
 const EMOJIS = [
   ["😀", "Visages", "😀 😃 😄 😁 😆 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😛 😜 🤪 😎 🤓 🥳 🤩 🤔 🤫 😴 😮 😱 😭 😡 🤯 🥶 🥵 🤠 👻 💀 👽 🤖 💩"],
@@ -935,6 +1005,10 @@ const EMOJIS = [
   ["🌈", "Nature", "☀️ 🌙 ⭐ 🌟 ✨ ⚡ 🔥 💧 🌊 ❄️ ☃️ 🌈 ☁️ 🌧️ 🌪️ 🌍 🌋 🏔️ 🌳 🌲 🌴 🌵 🌷 🌸 🌻 🍀 🍁 🍄"],
   ["❤️", "Symboles", "❤️ 🧡 💛 💚 💙 💜 🖤 💖 💔 ✅ ❌ ❓ ❗ ⚠️ 🚫 💯 🔴 🟠 🟡 🟢 🔵 🟣 ⬛ ⬜ ▶️ ⏸️ 🔁 ➕ ➖ ✖️ ➗ 🆗 🆕"]
 ];
+
+function boutonEmojis(id){
+  return '<button class="minikey" type="button" id="' + id + '-emo" aria-expanded="false" aria-controls="' + id + '-emojis">😀 Emojis</button>';
+}
 
 function emojisHtml(id){
   return '<div class="emojis" id="' + id + '-emojis" hidden>' +
@@ -983,10 +1057,10 @@ function brancherEmojis(id, ta){
 
 // Éditeur de JavaScript, avec le bouton Exécuter, la page (s’il y en a une) et la console.
 // o : { page, reponses, emojis } ; les réponses simulées de prompt() se modifient dans un champ.
-// Le sélecteur d’emojis s’affiche si l’étape ou son QCM a emojis:true.
+// Le sélecteur d’emojis s’affiche sauf si l’étape ou son QCM a emojis:false.
 function atelierJs(id, code, o){
   const lignes = code.split("\n").length;
-  const avecEmojis = !!(o.emojis || (qcm && qcm.emojis));
+  const avecEmojis = o.emojis !== false && !(qcm && qcm.emojis === false);
   return '<div class="atelier js">' +
     '<div class="atelier-tete"><span>JavaScript</span>' +
       '<button class="lien" id="' + id + '-reset">Remettre le code de départ</button></div>' +
@@ -994,7 +1068,7 @@ function atelierJs(id, code, o){
       ' spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code JavaScript">' +
       esc(code) + '</textarea>' +
     '<div class="js-barre"><button class="minikey wire" type="button" id="' + id + '-run">▶ Exécuter</button>' +
-      (avecEmojis ? '<button class="minikey" type="button" id="' + id + '-emo" aria-expanded="false" aria-controls="' + id + '-emojis">😀 Emojis</button>' : '') +
+      (avecEmojis ? boutonEmojis(id) : '') +
       (o.reponses ? '<label class="js-reponses">💬 Réponses à <code>prompt</code> :' +
         '<input class="champ" id="' + id + '-rep" value="' + esc(o.reponses.join(", ")) + '" autocomplete="off"' +
         ' title="Ce que l’utilisateur répond, dans l’ordre, séparé par des virgules"></label>' : '') +
@@ -1046,7 +1120,6 @@ function brancherJs(id, depart, o, surEtat){
     } });
   }
   surClic(id + "-run", executer);
-  brancherEmojis(id, ta);
   surClic(id + "-reset", function(){ ta.value = depart; executer(); ta.focus(); });
   ta.addEventListener("keydown", function(ev){
     if(ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)){ ev.preventDefault(); executer(); }
@@ -1081,11 +1154,12 @@ async function verifierJs(ex, code){
 
 function afficherJs(item){
   const ex = item.src;
+  const deja = dejaFait();
   panel.innerHTML =
     '<p class="theme">' + fmt(ex.etiquette || "Exercice") + '</p>' +
     '<p class="question">' + fmt(ex.q) + '</p>' +
     pageHtml(ex.page) +
-    atelierJs("code", ex.depart, ex) +
+    atelierJs("code", deja && typeof deja.code === "string" ? deja.code : ex.depart, ex) +
     '<p class="sub" style="margin:18px 0 6px"><b>Ce qui sera vérifié</b></p>' +
     '<ul class="verifs" id="verifs">' +
       listeVerifs(ex.verifs.map(function(v){ return { ok:null, msg:v.msg }; })) +
@@ -1144,6 +1218,10 @@ function afficherJs(item){
   });
 
   aide('Écris ton programme, clique sur ▶ Exécuter pour l’essayer, puis sur Vérifier');
+  if(deja){
+    revoirExercice(ex, reps[i] === true, ex.solution);
+    verifierJs(ex, ed.code()).then(function(res){ verifs.innerHTML = listeVerifs(res); });
+  }
 }
 
 // Projet de fin de module : trois projets au choix, à télécharger pour Visual Studio Code.
@@ -1296,7 +1374,7 @@ function resultat(){
 document.addEventListener("keydown", function(ev){
   if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
   if(ev.target && /^(TEXTAREA|INPUT|SELECT)$/.test(ev.target.tagName)) return;
-  if(ev.target && ev.target.closest && ev.target.closest(".interactif, .atelier, .projet-detail")) return;   // les jeux et les ateliers gardent leurs touches
+  if(ev.target && ev.target.closest && ev.target.closest(".interactif, .atelier, .projet-detail, #strip")) return;   // les jeux et les ateliers gardent leurs touches
   const k = ev.key.toLowerCase();
   const examen = tentative && tentative.examen && i >= 0;
   if(!repondu && panel.querySelector(".key[data-n]")){
