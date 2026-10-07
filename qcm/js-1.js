@@ -12,6 +12,7 @@
       "🚀 Bienvenue dans le premier module JavaScript ! Chaque bloc commence par une leçon avec du code que tu peux modifier et exécuter, puis viennent des questions et un exercice vérifié automatiquement.",
       "🏁 À la fin du module, tu choisis un projet parmi trois, tu le télécharges et tu le réalises dans Visual Studio Code. Les modules suivants s’appuient sur celui-ci : avance dans l’ordre !"
     ],
+    emojis: true,   // sélecteur d’emojis dans les ateliers JavaScript de ce module
     aideMemoire: `
 console.log("Bonjour !");          // afficher un message
 console.log(3 + 4);                // afficher un calcul : 7

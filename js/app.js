@@ -923,10 +923,70 @@ function pageHtml(page){
   return '<details class="page-html"><summary>Voir le HTML de la page</summary><pre class="code">' + esc(page.trim()) + '</pre></details>';
 }
 
+// Le sélecteur d’emojis de l’atelier JavaScript (pour les QCM qui ont emojis:true) :
+// un clic insère l’emoji à l’endroit du curseur dans le code.
+const EMOJIS = [
+  ["😀", "Visages", "😀 😃 😄 😁 😆 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😛 😜 🤪 😎 🤓 🥳 🤩 🤔 🤫 😴 😮 😱 😭 😡 🤯 🥶 🥵 🤠 👻 💀 👽 🤖 💩"],
+  ["👋", "Gestes", "👋 👍 👎 👏 🙌 🤝 ✌️ 🤞 👌 💪 🙏 ✍️ 👀 🧠 🦸 🦹 🧙 🧚 🧛 🧜 🧞 🥷 🧑‍🚀 🧑‍🍳"],
+  ["🐶", "Animaux", "🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🦉 🦄 🐝 🦋 🐢 🐍 🦖 🐉 🐙 🐬 🐳 🦈 🐠 🦀"],
+  ["🍕", "Nourriture", "🍎 🍌 🍓 🍉 🍇 🍒 🥝 🍍 🥕 🌽 🍕 🍔 🍟 🌭 🥪 🌮 🍝 🍣 🥐 🧀 🥚 🍳 🥞 🍪 🍩 🍰 🎂 🍫 🍬 🍭 🍿 🧃 🥤 🍦"],
+  ["⚽", "Jeux et sport", "⚽ 🏀 🏈 ⚾ 🎾 🏐 🏓 🥊 🛹 🚲 🏆 🥇 🥈 🥉 🎮 🕹️ 🎲 🧩 ♟️ 🎯 🎳 🎨 🎤 🎧 🎸 🥁 🎹 🎬 🎭"],
+  ["🚀", "Objets", "🚀 🛸 ✈️ 🚗 🚓 🚒 🚂 ⛵ 🏰 🏠 🏫 💻 📱 ⌨️ 🖱️ 💡 🔦 📚 ✏️ 📝 🎒 🔑 🗝️ 🔒 💰 💎 🎁 🎈 🎉 🎊 ⏰ ⌛ 🧪 🔮 🗡️ 🛡️ 🏹 🪄"],
+  ["🌈", "Nature", "☀️ 🌙 ⭐ 🌟 ✨ ⚡ 🔥 💧 🌊 ❄️ ☃️ 🌈 ☁️ 🌧️ 🌪️ 🌍 🌋 🏔️ 🌳 🌲 🌴 🌵 🌷 🌸 🌻 🍀 🍁 🍄"],
+  ["❤️", "Symboles", "❤️ 🧡 💛 💚 💙 💜 🖤 💖 💔 ✅ ❌ ❓ ❗ ⚠️ 🚫 💯 🔴 🟠 🟡 🟢 🔵 🟣 ⬛ ⬜ ▶️ ⏸️ 🔁 ➕ ➖ ✖️ ➗ 🆗 🆕"]
+];
+
+function emojisHtml(id){
+  return '<div class="emojis" id="' + id + '-emojis" hidden>' +
+    '<div class="emojis-onglets" role="tablist">' + EMOJIS.map(function(c, k){
+      return '<button type="button" class="emojis-onglet' + (k ? '' : ' actif') + '" data-cat="' + k + '"' +
+             ' role="tab" aria-selected="' + !k + '" title="' + c[1] + '">' + c[0] + '</button>';
+    }).join("") + '</div>' +
+    EMOJIS.map(function(c, k){
+      return '<div class="emojis-grille" data-grille="' + k + '"' + (k ? ' hidden' : '') + ' role="tabpanel" aria-label="' + c[1] + '">' +
+        c[2].split(" ").map(function(e){
+          return '<button type="button" class="emoji" data-emoji="' + e + '" title="Insérer ' + e + '">' + e + '</button>';
+        }).join("") + '</div>';
+    }).join("") +
+    '<p class="emojis-aide">Clique sur un emoji : il s’ajoute là où se trouve ton curseur dans le code. ' +
+    'Mets-le entre guillemets, dans un texte : <code>"Bravo 🎉"</code></p>' +
+  '</div>';
+}
+
+function brancherEmojis(id, ta){
+  const panneau = document.getElementById(id + "-emojis");
+  const bouton = document.getElementById(id + "-emo");
+  if(!panneau || !bouton) return;
+  bouton.onclick = function(){
+    panneau.hidden = !panneau.hidden;
+    bouton.setAttribute("aria-expanded", !panneau.hidden);
+  };
+  panneau.querySelectorAll(".emojis-onglet").forEach(function(o){
+    o.onclick = function(){
+      panneau.querySelectorAll(".emojis-onglet").forEach(function(x){
+        const on = x === o;
+        x.classList.toggle("actif", on);
+        x.setAttribute("aria-selected", on);
+      });
+      panneau.querySelectorAll(".emojis-grille").forEach(function(g){ g.hidden = g.dataset.grille !== o.dataset.cat; });
+    };
+  });
+  panneau.querySelectorAll(".emoji").forEach(function(b){
+    b.addEventListener("mousedown", function(ev){ ev.preventDefault(); });   // le code garde le curseur
+    b.onclick = function(){
+      ta.focus();
+      ta.setRangeText(b.dataset.emoji, ta.selectionStart, ta.selectionEnd, "end");
+      ta.dispatchEvent(new Event("input", { bubbles:true }));
+    };
+  });
+}
+
 // Éditeur de JavaScript, avec le bouton Exécuter, la page (s’il y en a une) et la console.
-// o : { page, reponses } ; les réponses simulées de prompt() se modifient dans un champ.
+// o : { page, reponses, emojis } ; les réponses simulées de prompt() se modifient dans un champ.
+// Le sélecteur d’emojis s’affiche si l’étape ou son QCM a emojis:true.
 function atelierJs(id, code, o){
   const lignes = code.split("\n").length;
+  const avecEmojis = !!(o.emojis || (qcm && qcm.emojis));
   return '<div class="atelier js">' +
     '<div class="atelier-tete"><span>JavaScript</span>' +
       '<button class="lien" id="' + id + '-reset">Remettre le code de départ</button></div>' +
@@ -934,10 +994,12 @@ function atelierJs(id, code, o){
       ' spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code JavaScript">' +
       esc(code) + '</textarea>' +
     '<div class="js-barre"><button class="minikey wire" type="button" id="' + id + '-run">▶ Exécuter</button>' +
+      (avecEmojis ? '<button class="minikey" type="button" id="' + id + '-emo" aria-expanded="false" aria-controls="' + id + '-emojis">😀 Emojis</button>' : '') +
       (o.reponses ? '<label class="js-reponses">💬 Réponses à <code>prompt</code> :' +
         '<input class="champ" id="' + id + '-rep" value="' + esc(o.reponses.join(", ")) + '" autocomplete="off"' +
         ' title="Ce que l’utilisateur répond, dans l’ordre, séparé par des virgules"></label>' : '') +
     '</div>' +
+    (avecEmojis ? emojisHtml(id) : '') +
     (o.page
       ? '<div class="atelier-tete"><span>La page</span></div>' +
         '<div class="apercu-cadre"><iframe class="apercu js-page" id="' + id + '-page" title="La page"></iframe></div>'
@@ -984,6 +1046,7 @@ function brancherJs(id, depart, o, surEtat){
     } });
   }
   surClic(id + "-run", executer);
+  brancherEmojis(id, ta);
   surClic(id + "-reset", function(){ ta.value = depart; executer(); ta.focus(); });
   ta.addEventListener("keydown", function(ev){
     if(ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)){ ev.preventDefault(); executer(); }

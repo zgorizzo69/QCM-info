@@ -528,6 +528,19 @@ pre.code{
 .page-html summary{cursor:pointer;color:var(--wire);font-weight:700}
 .page-html pre.code{margin:8px 0 0;font-size:.82rem}
 
+/* sélecteur d’emojis */
+.emojis{padding:8px 12px 10px;background:#F6F8FA;border-bottom:1px solid #D3DBE0}
+.emojis-onglets{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.emojis-onglet{font-size:1.15rem;line-height:1;padding:6px 8px;border:1px solid transparent;border-radius:6px;background:none;cursor:pointer}
+.emojis-onglet:hover{background:#E8EDF1}
+.emojis-onglet.actif{background:var(--key);border-color:var(--bevel);box-shadow:0 2px 0 var(--bevel)}
+.emojis-grille[hidden]{display:none}
+.emojis-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:2px;max-height:170px;overflow-y:auto}
+.emoji{font-size:1.45rem;line-height:1;padding:5px 0;border:none;border-radius:6px;background:none;cursor:pointer}
+.emoji:hover,.emoji:focus-visible{background:#DDE6FB;outline:none;transform:scale(1.15)}
+.emojis-onglet:focus-visible{outline:3px solid var(--wire);outline-offset:1px}
+.emojis-aide{margin:6px 0 0;font-size:.82rem;color:var(--ink-soft)}
+
 /* ---------- projets de fin de module ---------- */
 .projets{margin:20px 0 0}
 .projet-emoji{flex:0 0 auto;font-size:2rem;line-height:1}
