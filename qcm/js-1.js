@@ -85,7 +85,7 @@ console.log("2 + 3");   // entre guillemets, ce n'est plus un calcul !`,
           { msg:"Aucune erreur", test:function(r){ return !r.erreurs.length; } }
         ],
         solution:
-`console.log("Je m'appelle Inès");
+`console.log("Je m'appelle Louis");
 console.log(12);
 console.log("Mon animal préféré : le panda 🐼");`,
         e:"Chaque `console.log` affiche une ligne. Le nombre 12 s’écrit sans guillemets : c’est un vrai nombre, avec lequel on peut calculer." },
@@ -139,8 +139,19 @@ console.log("2" + "2");      // attention, ce sont des textes !`,
   Ami 4 : 🍬🍬🍬
   Ami 5 : 🍬🍬🍬
   Reste : 🍬🍬       ← c'est ça, le modulo : 17 % 5 vaut 2` },
-          "🧮 Pour le calculer de tête, en deux étapes : ① cherche le plus grand nombre de la table de 5 qui ne dépasse pas 17 : c’est **15** (5 × 3) ; ② enlève-le : 17 − 15 = **2**. Donc `17 % 5` vaut 2.",
-          "🏫 C’est la **division posée** de l’école primaire (la division euclidienne) : 17 = 5 × 3 + 2. Le 3 s’appelle le **quotient**, le 2 le **reste**. `%` donne le reste.",
+          "🧮 Pour calculer `a % b` de tête, on cherche **le plus grand multiplicateur** : combien de fois peut-on mettre b dans a **sans dépasser** ? Ensuite, on regarde ce qui manque pour arriver jusqu’à a : c’est le **reste**.",
+          "👉 Pour `17 % 5` : 5 × 3 = 15 ✅ (ça ne dépasse pas 17), mais 5 × 4 = 20 ❌ (trop grand). Le plus grand multiplicateur est donc **3**. Et de 15 pour aller à 17, il manque **2**. Donc `17 % 5` vaut 2, car **17 = 5 × 3 + 2**.",
+          "📋 D’autres exemples, toujours avec la même méthode :",
+          { code:
+`5 % 2  = 1    car  5 = 2 × 2 + 1      (2 × 3 = 6, trop grand)
+7 % 3  = 1    car  7 = 3 × 2 + 1      (3 × 3 = 9, trop grand)
+10 % 4 = 2    car 10 = 4 × 2 + 2      (4 × 3 = 12, trop grand)
+14 % 5 = 4    car 14 = 5 × 2 + 4      (5 × 3 = 15, trop grand)
+23 % 6 = 5    car 23 = 6 × 3 + 5      (6 × 4 = 24, trop grand)
+12 % 4 = 0    car 12 = 4 × 3 + 0      (ça tombe juste !)
+3 % 5  = 3    car  3 = 5 × 0 + 3      (5 × 1 = 5, déjà trop grand)` },
+          "💡 Le reste est toujours **plus petit** que le nombre par lequel on divise : avec `% 5`, il va de 0 à 4. S’il était plus grand, c’est qu’on aurait pu prendre un multiplicateur plus grand !",
+          "🏫 C’est la **division posée** de l’école primaire (la division euclidienne) : 17 = 5 × 3 + 2. Le plus grand multiplicateur (3) s’appelle le **quotient**, et ce qui reste (2) le **reste**. `%` donne le reste.",
           { code:
 `17 / 5   →  3.4   la division « normale », avec une virgule
 17 % 5   →  2     le reste, quand chacun a reçu 3 bonbons entiers` },
@@ -157,21 +168,25 @@ console.log(7 % 2);     // 7 est impair : il reste 1`,
         essais:[
           { texte:"25 élèves font des équipes de 4 : combien d’élèves restent sans équipe ? Calcule `25 % 4`.", test:function(r){ return /25\s*%\s*4/.test(r.sans) && r.logs.indexOf("1") >= 0; } },
           { texte:"Ton âge est-il pair ? Calcule `ton âge % 2` : 0 veut dire pair, 1 impair.", test:function(r){ return /\d+\s*%\s*2\b/.test(r.sans.replace(/10\s*%\s*2|7\s*%\s*2/g, "")); } },
-          "Calcule `100 % 7` de tête (cherche le plus grand nombre de la table de 7 qui ne dépasse pas 100), puis vérifie avec ▶ Exécuter."
+          "Calcule `100 % 7` de tête : cherche le plus grand multiplicateur (7 × ? sans dépasser 100), écris 100 = 7 × … + …, puis vérifie avec ▶ Exécuter."
         ],
         lien:"https://www.w3schools.com/js/js_arithmetic.asp" },
 
       { id:"calculs-3", t:"calculs", q:"Que vaut `20 % 6` ? (Rappel : `%` donne ce qui reste quand on partage équitablement.)",
         r:["2", "3", "3,33", "120"], b:0,
-        e:"20 bonbons pour 6 amis : chacun en reçoit 3 (6 × 3 = 18), et il en reste 20 − 18 = 2." },
+        e:"Le plus grand multiplicateur est 3 : 6 × 3 = 18 ne dépasse pas 20, mais 6 × 4 = 24 est trop grand. Donc `20 % 6` vaut 2, car 20 = 6 × 3 + 2." },
 
       { id:"calculs-4", t:"calculs", q:"Que vaut `9 % 3` ?",
         r:["0", "3", "1", "27"], b:0,
-        e:"9 bonbons pour 3 amis : chacun en reçoit 3, et il ne reste rien. Le partage tombe juste : 9 est divisible par 3." },
+        e:"`9 % 3` vaut 0, car 9 = 3 × 3 + 0 : le partage tombe juste, il ne reste rien. On dit que 9 est divisible par 3." },
+
+      { id:"calculs-6", t:"calculs", q:"Que vaut `11 % 4` ? (Cherche le plus grand multiplicateur de 4 qui ne dépasse pas 11.)",
+        r:["3", "2", "1", "44"], b:0,
+        e:"4 × 2 = 8 ne dépasse pas 11, mais 4 × 3 = 12 est trop grand. Le plus grand multiplicateur est 2, et de 8 pour aller à 11, il manque 3 : `11 % 4` vaut 3, car 11 = 4 × 2 + 3." },
 
       { id:"calculs-5", t:"calculs", q:"Un nombre est **pair** quand `nombre % 2` vaut…",
         r:["0", "1", "2", "Le nombre lui-même"], b:0,
-        e:"Partager un nombre pair entre 2, ça tombe toujours juste : il ne reste rien. Pour un nombre impair, il reste 1." },
+        e:"Un nombre pair tombe juste quand on le partage entre 2 : 8 = 2 × 4 + 0, donc `8 % 2` vaut 0. Pour un nombre impair, il reste 1 : 5 = 2 × 2 + 1, donc `5 % 2` vaut 1." },
 
       { id:"calculs-c1", t:"calculs", type:"js",
         q:"🍕 La fête des pizzas ! Il y a **4 pizzas** coupées chacune en **8 parts**, pour **6 amis**. Affiche avec des calculs (pas de résultat écrit à la main !) : le **nombre total** de parts, puis le **nombre de parts qui restent** quand chacun en a pris autant que possible (indice : le modulo `%` donne ce qui reste après un partage équitable).",
@@ -272,7 +287,7 @@ console.log("Il me reste " + tirelire + " € 🐷");`,
           "🔍 Ces petits mots après un point s’appellent des **méthodes** : des commandes qu’on peut utiliser sur un texte."
         ],
         js:
-`const prenom = "Inès";
+`const prenom = "Jeanne";
 const animal = "dragon";
 
 console.log("Salut " + prenom + " !");
@@ -280,7 +295,7 @@ console.log(prenom + " a un " + animal + " 🐉");
 console.log("Ton prénom a " + prenom.length + " lettres.");
 console.log(animal.toUpperCase() + " !!!");`,
         essais:[
-          { texte:"Remplace Inès par ton prénom, et l’animal par le tien.", test:function(r){ return r.logs.length > 0 && r.logs[0] !== "Salut Inès !"; } },
+          { texte:"Remplace Jeanne par ton prénom, et l’animal par le tien.", test:function(r){ return r.logs.length > 0 && r.logs[0] !== "Salut Jeanne !"; } },
           { texte:"Affiche ton prénom en MAJUSCULES.", test:function(r){ return /prenom\.toUpperCase\(\)/.test(r.sans); } },
           { texte:"Enlève l’espace après « Salut » : que se passe-t-il ?", test:function(r){ return /^Salut\S/.test(r.logs[0] || ""); } }
         ],
@@ -299,22 +314,22 @@ console.log(animal.toUpperCase() + " !!!");`,
         e:"Piège ! On lit de gauche à droite : \"J’ai \" + 10 donne le texte « J’ai 10 », puis on colle 2. Pour additionner d’abord, il faut des parenthèses : `\"J'ai \" + (10 + 2) + \" ans\"`." },
 
       { id:"textes-c1", t:"textes", type:"js",
-        q:"🦸 Ton nom de super-héros ! Avec les variables `prenom` et `couleur`, affiche la phrase **« Voici CAPITAINE INÈS, le héros violet ! »** : le prénom en majuscules grâce à `.toUpperCase()`, la phrase construite avec `+`. Puis affiche le nombre de lettres du prénom avec `.length`.",
+        q:"🦸 Ton nom de super-héros ! Avec les variables `prenom` et `couleur`, affiche la phrase **« Voici CAPITAINE LOUIS, le héros violet ! »** : le prénom en majuscules grâce à `.toUpperCase()`, la phrase construite avec `+`. Puis affiche le nombre de lettres du prénom avec `.length`.",
         depart:
-`const prenom = "Inès";
+`const prenom = "Louis";
 const couleur = "violet";
 
 // Construis la phrase avec + et .toUpperCase()
 `,
         verifs:[
-          { msg:"La phrase contient « CAPITAINE INÈS »", test:function(r){ return /CAPITAINE INÈS/.test(logs(r)); } },
-          { msg:"Elle contient aussi la couleur « violet »", test:function(r){ return r.logs.some(function(l){ return /INÈS/.test(l) && /violet/.test(l); }); } },
+          { msg:"La phrase contient « CAPITAINE LOUIS »", test:function(r){ return /CAPITAINE LOUIS/.test(logs(r)); } },
+          { msg:"Elle contient aussi la couleur « violet »", test:function(r){ return r.logs.some(function(l){ return /LOUIS/.test(l) && /violet/.test(l); }); } },
           { msg:"Le prénom est mis en majuscules avec `.toUpperCase()` (et pas écrit à la main)",
-            test:function(r){ return /prenom\.toUpperCase\(\)/.test(r.sans) && !/INÈS/.test(r.sans); } },
-          { msg:"Le nombre de lettres (4) est affiché grâce à `.length`", test:function(r){ return /prenom\.length/.test(r.sans) && /\b4\b/.test(logs(r)); } }
+            test:function(r){ return /prenom\.toUpperCase\(\)/.test(r.sans) && !/LOUIS/.test(r.sans); } },
+          { msg:"Le nombre de lettres (5) est affiché grâce à `.length`", test:function(r){ return /prenom\.length/.test(r.sans) && /\b5\b/.test(logs(r)); } }
         ],
         solution:
-`const prenom = "Inès";
+`const prenom = "Louis";
 const couleur = "violet";
 
 // Construis la phrase avec + et .toUpperCase()

@@ -120,7 +120,7 @@ message.textContent = "Et moi aussi, j'ai été transformé.";`,
         solution:
 `// Trouve les éléments avec document.querySelector, puis change leur textContent
 document.querySelector("#titre").textContent = "🪪 Ma carte de membre";
-document.querySelector("#prenom").textContent = "Inès";
+document.querySelector("#prenom").textContent = "Louis";
 document.querySelector("#age").textContent = 12;`,
         e:"On peut enchaîner directement `document.querySelector(…).textContent = …`, ou passer par une variable si on utilise l’élément plusieurs fois." },
 

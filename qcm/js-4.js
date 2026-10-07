@@ -273,8 +273,8 @@ function attaque(nomDuHeros) {
 }
 
 let pvDuDragon = 30;
-pvDuDragon = pvDuDragon - attaque("Inès");
-pvDuDragon = pvDuDragon - attaque("Malo");
+pvDuDragon = pvDuDragon - attaque("Jeanne");
+pvDuDragon = pvDuDragon - attaque("Louis");
 console.log("🐉 Il reste " + pvDuDragon + " PV au dragon.");`,
         essais:[
           { texte:"Ajoute une troisième attaque, par un héros de ton choix.", test:function(r){ return r.logs.filter(function(l){ return /inflige/.test(l); }).length >= 3; } },
@@ -357,7 +357,7 @@ console.log("3 livres à 10 € : " + prixTotal(10, 3) + " €");`,
 // Lis le README.md pour connaître tes missions !
 
 // ✅ Mission 1 : les combattants
-const nomHeros = "Inès la Brave";
+const nomHeros = "Jeanne la Brave";
 let pvHeros = 30;
 const forceHeros = 4;
 

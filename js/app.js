@@ -996,7 +996,7 @@ function pageHtml(page){
 // Le sélecteur d’emojis des éditeurs de code (sauf pour un QCM qui a emojis:false) :
 // un clic insère l’emoji à l’endroit du curseur dans le code.
 const EMOJIS = [
-  ["😀", "Visages", "😀 😃 😄 😁 😆 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😛 😜 🤪 😎 🤓 🥳 🤩 🤔 🤫 😴 😮 😱 😭 😡 🤯 🥶 🥵 🤠 👻 💀 👽 🤖 💩"],
+  ["😀", "Visages", "😀 😃 😄 😁 😆 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😛 😜 🤪 😎 🤓 🥳 🤩 🤔 🤫 😴 😮 😱 😭 😡 🤯 🥶 🥵 🤠 👻 💀 👽 🤖"],
   ["👋", "Gestes", "👋 👍 👎 👏 🙌 🤝 ✌️ 🤞 👌 💪 🙏 ✍️ 👀 🧠 🦸 🦹 🧙 🧚 🧛 🧜 🧞 🥷 🧑‍🚀 🧑‍🍳"],
   ["🐶", "Animaux", "🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🦉 🦄 🐝 🦋 🐢 🐍 🦖 🐉 🐙 🐬 🐳 🦈 🐠 🦀"],
   ["🍕", "Nourriture", "🍎 🍌 🍓 🍉 🍇 🍒 🥝 🍍 🥕 🌽 🍕 🍔 🍟 🌭 🥪 🌮 🍝 🍣 🥐 🧀 🥚 🍳 🥞 🍪 🍩 🍰 🎂 🍫 🍬 🍭 🍿 🧃 🥤 🍦"],
