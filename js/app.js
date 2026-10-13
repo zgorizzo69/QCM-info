@@ -694,7 +694,8 @@ function afficherLecon(item){
     '<p class="theme">' + fmt(l.etiquette || "Leçon") + '</p>' +
     '<h1 class="lecon">' + fmt(l.titre) + '</h1>' +
     l.contenu.map(function(c){
-      return typeof c === "string" ? '<p>' + fmt(c) + '</p>' : '<pre class="code">' + esc(c.code) + '</pre>';
+      if(typeof c === "string") return '<p>' + fmt(c) + '</p>';
+      return c.scratch !== undefined ? '<div class="sb-lecon">' + ScratchJeux.blocs(c.scratch) + '</div>' : '<pre class="code">' + esc(c.code) + '</pre>';
     }).join("") +
     (l.terminal
       ? '<h2>Essaie toi-même</h2><p class="sub">Clique dans le terminal, tape une commande puis appuie sur Entrée. ' +
@@ -727,9 +728,14 @@ function afficherLecon(item){
   aide('Lis la leçon, puis appuie sur <kbd>Entrée</kbd> pour continuer');
 }
 
+// Une question peut montrer des blocs Scratch sous son texte : scratch:"…" (voir js/scratch-jeux.js).
+function blocsQuestion(item){
+  return item.src && item.src.scratch ? '<div class="sb-question">' + ScratchJeux.blocs(item.src.scratch) + '</div>' : '';
+}
+
 function afficherChoix(item){
   panel.innerHTML =
-    '<p class="question">' + fmt(item.q) + '</p>' +
+    '<p class="question">' + fmt(item.q) + '</p>' + blocsQuestion(item) +
     '<div class="keys" id="keys">' +
       item.r.map(function(txt, n){
         return '<button class="key" data-n="' + n + '">' +
@@ -792,7 +798,7 @@ function afficherExamen(item){
   choixExamen = null;
   panel.innerHTML =
     '<p class="theme">📝 Examen blanc</p>' +
-    '<p class="question">' + fmt(item.q) + '</p>' +
+    '<p class="question">' + fmt(item.q) + '</p>' + blocsQuestion(item) +
     '<div class="keys" id="keys">' +
       item.r.map(function(txt, n){
         return '<button class="key" data-n="' + n + '" aria-pressed="false">' +
@@ -1224,10 +1230,12 @@ function afficherJs(item){
   }
 }
 
-// Projet de fin de module : trois projets au choix, à télécharger pour Visual Studio Code.
+// Projet de fin de module : trois projets au choix, à télécharger pour Visual Studio Code
+// (js/projets-js.js), ou un projet de départ à ouvrir dans Scratch quand le projet a un sb3 (js/projets-scratch.js).
 function afficherProjet(item){
   const pj = item.src;
   const deja = reponseDe(tentative, item.id);
+  const scratch = pj.projets.some(function(p){ return p.sb3; });
   panel.innerHTML =
     '<p class="theme">' + fmt(pj.etiquette || "🚀 Projet final") + '</p>' +
     '<h1 class="lecon">' + fmt(pj.titre) + '</h1>' +
@@ -1241,6 +1249,10 @@ function afficherProjet(item){
     boutonSuivant("J’ai choisi mon projet, on continue");
 
   let choisi = null;
+  function liste(titre, items, numeros){
+    return '<h3>' + titre + '</h3><' + (numeros ? 'ol' : 'ul') + '>' +
+      items.map(function(t){ return '<li>' + fmt(t) + '</li>'; }).join("") + '</' + (numeros ? 'ol' : 'ul') + '>';
+  }
   function montrer(k){
     choisi = pj.projets[k];
     panel.querySelectorAll(".projet-carte").forEach(function(b){
@@ -1249,36 +1261,43 @@ function afficherProjet(item){
       b.setAttribute("aria-pressed", on);
     });
     const p = choisi, module = qcm;
-    const fichiers = ProjetJs.fichiers(p, module);
+    const fichiers = p.sb3 ? ProjetScratch.fichiers(p, module) : ProjetJs.fichiers(p, module);
     document.getElementById("projet-detail").innerHTML =
       '<div class="projet-detail">' +
         '<h2>' + p.emoji + ' ' + esc(p.titre) + '</h2>' +
         '<p>' + fmt(p.description) + '</p>' +
         '<div class="projet-telecharger">' +
-          '<button class="bigkey wire" type="button" id="zip">📦 Télécharger le projet (.zip)</button>' +
-          '<p class="sub">ou fichier par fichier : ' + fichiers.map(function(f, n){
-            return '<button class="minikey" type="button" data-f="' + n + '">⬇ ' + esc(f.nom) + '</button>';
+          '<button class="bigkey wire" type="button" id="zip">' +
+            (p.sb3 ? '🐱 Télécharger le projet Scratch (.sb3)' : '📦 Télécharger le projet (.zip)') + '</button>' +
+          '<p class="sub">' + (p.sb3 ? 'et la fiche du projet : ' : 'ou fichier par fichier : ') + fichiers.map(function(f, n){
+            return p.sb3 && n === 0 ? '' : '<button class="minikey" type="button" data-f="' + n + '">⬇ ' + esc(f.nom) + '</button>';
           }).join(" ") + '</p>' +
         '</div>' +
-        '<h3>🚀 Pour commencer, avec Visual Studio Code</h3>' +
-        '<ol>' + ProjetJs.demarrer(p).map(function(t){ return '<li>' + fmt(t) + '</li>'; }).join("") + '</ol>' +
-        '<h3>✅ Les missions, dans l’ordre</h3>' +
-        '<ol>' + p.missions.map(function(t){ return '<li>' + fmt(t) + '</li>'; }).join("") + '</ol>' +
+        (p.sb3 ? liste('🚀 Pour commencer, avec Scratch', ProjetScratch.DEMARRER, true)
+               : liste('🚀 Pour commencer, avec Visual Studio Code', ProjetJs.demarrer(p), true)) +
+        liste('✅ Les missions, dans l’ordre', p.missions, true) +
+        (p.coupsDePouce ? '<h3>💡 Coups de pouce</h3>' + p.coupsDePouce.map(function(c){
+          return '<details class="pouce"><summary>' + fmt(c.titre) + '</summary>' + ScratchJeux.blocs(c.blocs) + '</details>';
+        }).join("") : '') +
         '<h3>🏆 Les défis</h3>' +
         '<ul class="defis">' + p.defis.map(function(d){
           return '<li><span class="etoiles" aria-label="' + d.n + ' étoile' + (d.n > 1 ? 's' : '') + '">' + ProjetJs.ETOILES[d.n] + '</span><span>' + fmt(d.texte) + '</span></li>';
         }).join("") + '</ul>' +
-        '<h3>🎨 Idées pour le rendre unique</h3>' +
-        '<ul>' + p.idees.map(function(t){ return '<li>' + fmt(t) + '</li>'; }).join("") + '</ul>' +
-        '<details><summary>👀 Voir le code de départ (script.js)</summary><pre class="code">' + esc(p.fichiers["script.js"] || "") + '</pre></details>' +
+        liste('🎨 Idées pour le rendre unique', p.idees, false) +
+        (p.sb3
+          ? '<details><summary>👀 Voir les scripts du projet de départ</summary>' + ProjetScratch.depart(p).map(function(d){
+              return '<p><b>' + esc(d.nom) + '</b></p>' + (d.blocs ? ScratchJeux.blocs(d.blocs) : '<p class="sub">Aucun script : à toi de jouer !</p>');
+            }).join("") + '</details>'
+          : '<details><summary>👀 Voir le code de départ (script.js)</summary><pre class="code">' + esc(p.fichiers["script.js"] || "") + '</pre></details>') +
       '</div>';
     surClic("zip", function(){
-      Zip.telecharger(p.id + ".zip", Zip.creer(fichiers.map(function(f){ return { nom:p.id + "/" + f.nom, contenu:f.contenu }; })));
+      if(p.sb3) Zip.telecharger(fichiers[0].nom, fichiers[0].blob);
+      else Zip.telecharger(p.id + ".zip", Zip.creer(fichiers.map(function(f){ return { nom:p.id + "/" + f.nom, contenu:f.contenu }; })));
     });
     document.querySelectorAll("[data-f]").forEach(function(b){
       b.onclick = function(){
         const f = fichiers[+b.dataset.f];
-        Zip.telecharger(f.nom, new Blob([f.contenu], { type:"text/plain;charset=utf-8" }));
+        Zip.telecharger(f.nom, f.blob || new Blob([f.contenu], { type:"text/plain;charset=utf-8" }));
       };
     });
   }
@@ -1293,7 +1312,7 @@ function afficherProjet(item){
     if(!enregistrer({ lu:true, projet:choisi ? choisi.id : null })) return false;
     reps[i] = "lu";
   });
-  aide('Choisis un projet, télécharge-le, puis ouvre-le dans Visual Studio Code');
+  aide(scratch ? 'Choisis un projet, télécharge-le, puis ouvre-le dans Scratch' : 'Choisis un projet, télécharge-le, puis ouvre-le dans Visual Studio Code');
 }
 
 /* ---------- résultat ---------- */

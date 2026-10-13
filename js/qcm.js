@@ -3,8 +3,8 @@
    à la liste des <script> dans index.html pour qu’il apparaisse dans l’application.
 
    Une étape (élément de « questions ») est de l’un de ces types :
-     - "choix" (par défaut) : question à choix multiple { q, r, b, e } ;
-     - "lecon" : explication non notée { titre, contenu:[texte | {code}], exemple? | terminal? | interactif?,
+     - "choix" (par défaut) : question à choix multiple { q, r, b, e, scratch? } (scratch : des blocs à montrer) ;
+     - "lecon" : explication non notée { titre, contenu:[texte | {code} | {scratch}], exemple? | terminal? | interactif?,
                  essais?:[texte | {texte, test}], lien? } ;
                  interactif(zone, signaler) dessine un jeu dans la zone (voir js/ia-jeux.js) ;
      - "code"  : exercice de HTML en direct { q, depart, solution, verifs:[{msg, test(doc, code)}], e } ;
@@ -12,7 +12,8 @@
      - "terminal" : exercice dans le terminal simulé { q, fs, solution:[commandes], verifs:[{msg, test(etat)}], e } ;
      - "js" : exercice de JavaScript { q, depart, solution, page?, reponses?, e,
               verifs:[{ msg, test?(r), dans?(p), avant?(p), reponses? }] } (voir js/bac-js.js) ;
-     - "projet" : projets de fin de module au choix { titre, contenu:[texte], projets:[projet] } (voir js/projets-js.js).
+     - "projet" : projets de fin de module au choix { titre, contenu:[texte], projets:[projet] } (voir js/projets-js.js,
+                  ou js/projets-scratch.js pour un projet Scratch : sb3 au lieu de fichiers).
    Une leçon peut aussi donner js:"code" (avec page? et reponses?) : un atelier JavaScript exécutable. */
 const QCM = (function(){
   const liste = [];
@@ -66,7 +67,7 @@ const QCM = (function(){
       }
       if(type === "projet"){
         if(!q.titre || !Array.isArray(q.contenu) || !Array.isArray(q.projets) || !q.projets.length ||
-           q.projets.some(function(p){return !p.id || !p.titre || !p.fichiers || !Array.isArray(p.missions) || !Array.isArray(p.defis);}))
+           q.projets.some(function(p){return !p.id || !p.titre || !(p.fichiers || p.sb3) || !Array.isArray(p.missions) || !Array.isArray(p.defis);}))
           return erreur(id, "le projet « " + q.id + " » doit avoir un titre, un contenu et des projets complets.");
         continue;
       }

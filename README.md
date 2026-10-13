@@ -14,6 +14,12 @@ QCM disponibles:
   `mkdir`, `touch`, `cat`, `nano` dans un terminal simulé, et édition de texte.
 - **Les bases du HTML** (`qcm/html.js`) : leçons, questions et exercices de code en direct.
 - **L’atelier CSS** (`qcm/css.js`) : leçons et défis créatifs pour décorer ses pages.
+- **Programmer avec Scratch** (`qcm/scratch.js`) : l’écran de Scratch, la scène et ses coordonnées,
+  les scripts, les boucles (dessins au stylo), les événements, les conditions et les variables. Les
+  leçons contiennent des ateliers où l’on assemble de vrais blocs et où on lance le programme sur une
+  petite scène (`js/scratch-jeux.js`). Le cours se termine par **trois projets au choix** (un jeu
+  d’adresse, un labyrinthe, une histoire animée), à télécharger en `.sb3` et à terminer dans Scratch
+  (`js/projets-scratch.js`).
 - **JavaScript**, en cinq modules progressifs (pour les moins de 14 ans, sans programmation objet) :
   1. **Premiers pas** (`qcm/js-1.js`) : `console.log`, calculs, variables, textes, hasard ;
   2. **Prendre des décisions** (`qcm/js-2.js`) : comparaisons, `prompt`, `if` / `else`, `&&` `||` `!` ;
@@ -129,6 +135,30 @@ Les sondes sont recopiées dans l’iframe : elles ne doivent utiliser aucune va
 Le projet de fin de module est une étape `type:"projet"` avec trois projets ; leurs fichiers sont
 préparés avec `ProjetJs.console({…})` (projets « console ») ou écrits directement, et le README est
 généré par `js/projets-js.js`. Le `.zip` est fabriqué dans le navigateur (`js/zip.js`).
+
+### Leçons et projets Scratch
+
+Dans une leçon, `{ scratch:"…" }` dessine des blocs Scratch, et une question peut en montrer avec
+`scratch:"…"`. Le texte donne un bloc par ligne, précédé de sa catégorie ; les blocs indentés de deux
+espaces vont dans le bloc du dessus, et une ligne vide sépare deux scripts :
+
+```js
+{ scratch:`evenement: quand 🏁 est cliqué
+controle: répéter (4) fois
+  mouvement: avancer de (100) pas
+  controle: si <touche le [bord v] ?> alors
+    apparence: dire [Aïe !] pendant (1) secondes` }
+```
+
+`(10)` est une case blanche, `[Bonjour]` une case de texte, `[espace v]` un menu, `{score}` une
+variable (`{operateur:nombre aléatoire entre (1) et (6)}` un autre bloc rond) et `<…>` une condition.
+Les ateliers sont dans `js/scratch-jeux.js` : `ScratchJeux.atelier(zone, signaler, { blocs, depart,
+chat, etoile })` (assembler des blocs et lancer le programme), `coordonnees`, `interface`, `clavier`,
+`score`.
+
+Un projet Scratch donne `sb3` au lieu de `fichiers` : les sprites, leurs costumes, les arrière-plans,
+les variables et les premiers scripts. `js/projets-scratch.js` en fabrique le fichier `.sb3` (un
+`.zip` avec `project.json` et les images SVG) et le README.
 
 ### Leçons et exercices de code
 
