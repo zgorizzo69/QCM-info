@@ -135,6 +135,12 @@ p{margin:0 0 14px;max-width:62ch}
 
 .sub{color:var(--ink-soft);font-size:.92rem}
 #blocs .key{cursor:pointer}
+/* Blocs verrouillés : tous choisis, il faut passer par « Choisir les blocs » pour en retirer. */
+#blocs.verrou .key{cursor:default}
+#blocs.verrou .key:hover{background:#E7F5EC}
+#blocs.verrou .key:active{transform:none;box-shadow:0 4px 0 var(--ok-bevel)}
+.blocs-etat{margin:22px 0 10px;max-width:none;font-size:.95rem;color:var(--ink-soft)}
+.blocs-etat b{color:var(--ink)}
 #go[disabled]{cursor:default}
 
 .key.picked-ok{
@@ -333,17 +339,102 @@ pre.code{
 .plus-loin{margin:16px 0 0;font-size:.95rem}
 .plus-loin a{color:var(--wire);font-weight:700}
 
-/* ---------- notes ---------- */
-.moyenne{
-  display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
-  margin:12px 0 4px;padding:14px 18px;
-  background:var(--key);border:1px solid var(--bevel);border-radius:8px;
-  box-shadow:0 3px 0 var(--bevel);
+/* ---------- page des QCM : examen sur plusieurs QCM ---------- */
+.examen-barre{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 18px;
+  margin:18px 0 0;padding:14px 16px;
+  background:#EEF2FF;border:1px solid #C9D3FB;border-radius:8px;
 }
-.moyenne .score{margin:0}
-.moyenne p{margin:0;color:var(--ink-soft)}
-.notes .note{font-variant-numeric:tabular-nums;color:var(--ink-soft);white-space:nowrap}
-.notes .note b{font-size:1.45rem;font-weight:900;color:var(--ink)}
+.examen-barre p{flex:1 1 280px;margin:0;font-size:.95rem}
+.examen-barre .actions{gap:12px}
+.examen-barre .bigkey{padding:10px 22px;font-size:1rem}
+/* Mode sélection : la case de chaque QCM devient une case à cocher. */
+#qcms .etat.dispo,.cap-coche{display:none}
+#qcms.selection .etat{display:none}
+#qcms.selection .etat.dispo{display:block}
+#qcms.selection .cap-n{display:none}
+#qcms.selection .key.choisi .cap-coche{display:inline}
+#qcms.selection .key:not(.choisi) .cap{background:#fff}
+#qcms.selection .key.dim{cursor:not-allowed}
+.lancer{
+  position:sticky;bottom:12px;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;
+  margin:20px 0 0;padding:12px 14px 12px 18px;
+  background:var(--key);border:1px solid var(--wire);border-radius:10px;
+  box-shadow:0 4px 0 #152C93,0 10px 24px rgba(23,33,43,.18);
+}
+.lancer[hidden]{display:none}
+.lancer span{font-weight:700}
+
+/* ---------- page des QCM : résultats, examens, historique ---------- */
+.section{margin:34px 0 0;padding-top:24px;border-top:2px solid #DDE3E7}
+.section > h2,.section summary h2{font-size:1.3rem;margin:0}
+
+.tuiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 0}
+.tuile{
+  display:flex;flex-direction:column;gap:2px;padding:12px 14px;
+  background:var(--key);border:1px solid var(--bevel);border-radius:8px;box-shadow:0 3px 0 var(--bevel);
+}
+.tuile-titre{font-size:.85rem;font-weight:700;color:var(--ink-soft)}
+.tuile-valeur{color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.tuile-valeur b{font-size:2rem;font-weight:900;line-height:1.15;letter-spacing:-.02em;color:var(--ink)}
+
+/* Une ligne par QCM : nom, note du dernier passage, note de l’examen blanc. */
+.notes-tete,.notes-qcm li{display:grid;grid-template-columns:minmax(0,1fr) 7em 12em;gap:6px 16px;align-items:center}
+.notes-tete{
+  margin:24px 0 0;padding:0 0 6px;border-bottom:2px solid #CFD8DD;
+  font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);
+}
+.notes-qcm{margin:0;padding:0;list-style:none}
+.notes-qcm li{padding:12px 0;border-bottom:1px solid #DDE3E7}
+.notes-qcm .nom{display:block;font-weight:700;overflow-wrap:anywhere}
+.notes-qcm .sub{display:block;font-size:.85rem}
+.nq-val{display:flex;align-items:center;gap:6px}
+.nq-val .minikey{margin-left:6px}
+.nq-titre{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.note-bas{margin:12px 0 0;max-width:none;font-size:.85rem;color:var(--ink-soft)}
+
+.pastille{
+  display:inline-block;min-width:2.7em;padding:2px 9px;border-radius:999px;
+  font-size:1.05rem;font-weight:900;text-align:center;font-variant-numeric:tabular-nums;
+}
+.pastille.bien{background:#E7F5EC;color:var(--ok-bevel);box-shadow:inset 0 0 0 1px #A8D8B9}
+.pastille.moyen{background:#FFF4D6;color:#7A5200;box-shadow:inset 0 0 0 1px #E2C46A}
+.pastille.faible{background:#FBEAE9;color:var(--no-bevel);box-shadow:inset 0 0 0 1px #EBB1AD}
+.sur{font-size:.85rem;color:var(--ink-soft);white-space:nowrap}
+.rien{color:var(--ink-soft)}
+
+.section .liste li > div:first-child{flex:1 1 280px;min-width:0}
+.examens .actions{align-items:center;gap:6px}
+.examens .minikey{margin-left:8px}
+.puces{display:flex;flex-wrap:wrap;gap:4px;margin:5px 0 3px}
+.puce{
+  padding:1px 8px;border-radius:999px;
+  background:#EEF2FF;border:1px solid #C9D3FB;color:#152C93;font-size:.78rem;font-weight:700;
+}
+
+.historique summary{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;cursor:pointer;list-style:none}
+.historique summary::-webkit-details-marker{display:none}
+.historique summary::after{content:"Afficher ▾";margin-left:auto;font-size:.92rem;font-weight:700;color:var(--wire)}
+.historique[open] summary::after{content:"Masquer ▴"}
+.historique summary:focus-visible{outline:3px solid var(--wire);outline-offset:3px;border-radius:4px}
+.genre{
+  display:inline-block;margin-right:8px;padding:0 7px;border-radius:4px;vertical-align:2px;
+  background:#E8EDF1;color:var(--ink-soft);font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+}
+.misses .origine{display:block;margin-bottom:2px;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--wire)}
+
+@media (max-width:600px){
+  .notes-tete{display:none}
+  .notes-qcm li{grid-template-columns:1fr 1fr;gap:8px 12px}
+  .nq-nom{grid-column:1 / -1}
+  .nq-val{flex-wrap:wrap}
+  .nq-titre{position:static;flex:1 0 100%;width:auto;height:auto;clip:auto;font-size:.78rem;font-weight:700;color:var(--ink-soft)}
+}
+@media (max-width:520px){
+  .tuiles{grid-template-columns:1fr 1fr}
+  .tuile:first-child{grid-column:1 / -1}
+}
 
 /* ---------- examen blanc ---------- */
 .encart{
@@ -353,7 +444,6 @@ pre.code{
 }
 .encart h2{margin-top:14px}
 .encart p{margin:8px 0 0}
-.notes .actions{align-items:center;gap:14px}
 .key.choisi{
   background:#E9EDFD;border-color:var(--wire);
   box-shadow:0 4px 0 #152C93;transform:translateY(0);
@@ -361,6 +451,11 @@ pre.code{
 .key.choisi .cap{background:var(--wire);border-color:#152C93;color:#fff}
 .bigkey:disabled{opacity:.45;cursor:default}
 .bigkey:disabled:active{transform:none}
+/* Le bouton gris reste collé à gauche de « Commencer », même quand la ligne passe à la ligne. */
+.row .groupe{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px}
+.bigkey.gris{background:#D5DCE1;border-color:var(--bevel-deep);color:var(--ink)}
+.bigkey.eclaire{animation:eclaire-bouton .45s ease 3}
+@keyframes eclaire-bouton{50%{border-color:var(--wire);box-shadow:0 5px 0 var(--bevel-deep),0 0 0 5px #C9D3FB}}
 .encart.eclaire{animation:eclaire 1.6s ease 2}
 @keyframes eclaire{50%{border-color:var(--wire);box-shadow:0 3px 0 var(--wire),0 0 0 4px #C9D3FB}}
 .top-count .lien{font-size:inherit}
@@ -731,3 +826,4 @@ pre.code{
 @media (max-width:600px){
   code{white-space:normal;overflow-wrap:anywhere}
 }
+

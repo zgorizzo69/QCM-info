@@ -27,6 +27,7 @@ const QCM = (function(){
     const id = def && def.id;
     if(!id || typeof id !== "string") return erreur("?", "il faut un id (texte).");
     if(liste.some(function(q){return q.id === id;})) return erreur(id, "cet id est déjà utilisé.");
+    if(id === "examen") return erreur(id, "cet id est réservé aux examens sur plusieurs QCM (voir js/sessions.js).");
     if(!def.titre) return erreur(id, "il faut un titre.");
     if(!Array.isArray(def.themes) || !def.themes.length) return erreur(id, "il faut au moins un thème.");
     if(!Array.isArray(def.questions) || !def.questions.length) return erreur(id, "il faut au moins une question.");

@@ -38,11 +38,20 @@ QCM disponibles:
    enregistrées dans le navigateur (`localStorage`). Chaque réponse y est ajoutée dès qu’elle est donnée.
    Les sessions peuvent être **exportées** en fichier JSON (une seule, ou toutes à la fois), puis
    **importées** sur un autre poste.
-2. **Choix du QCM** : la liste des QCM disponibles, avec la progression du QCM en cours. La section
-   **Mes résultats** donne une note sur 20 par QCM (celle du dernier passage terminé, avec la
-   meilleure note) et la moyenne générale. La section **Examens blancs** donne la note du dernier
-   examen blanc de chaque QCM. L’historique liste les passages déjà terminés.
-3. **Choix des blocs** : on peut passer tous les thèmes du QCM ou seulement certains. Un QCM interrompu
+2. **Choix du QCM** : la liste des QCM disponibles, avec la progression du QCM en cours. Le bouton
+   **📝 Examen** fait passer la liste en mode sélection : on coche un ou plusieurs QCM, puis
+   **Lancer l’examen** pose 20 questions à choix tirées au hasard parmi eux (réparties aussi
+   également que possible entre les QCM cochés, puis mélangées). Il fonctionne comme un examen blanc :
+   pas de correction avant la fin, on peut revenir changer une réponse, et un examen interrompu peut
+   être repris. En bas de la page :
+   - **Mes résultats** : la moyenne générale, le nombre de QCM notés et la note du dernier examen,
+     puis une ligne par QCM avec la note du dernier passage terminé (et la meilleure) et celle de
+     l’examen blanc, en vert, orange ou rouge ;
+   - **Mes examens** : tous les examens sur plusieurs QCM, avec leur note et les QCM concernés ;
+   - **Historique** (replié) : tous les passages terminés, à revoir.
+3. **Choix des blocs** : tous les blocs du QCM sont choisis d’office. Pour n’en passer que certains,
+   on clique d’abord sur le bouton gris **Choisir les blocs** (à gauche de *Commencer*), puis sur les
+   blocs à retirer ; **Reprendre tous les blocs** revient à la sélection complète. Un QCM interrompu
    peut être repris. En bas de la page (et depuis le lien « 📝 Examen blanc » en haut de chaque étape), le bouton **Passer l’examen blanc** tire au hasard 10 questions
    à choix parmi tous les blocs (les leçons et les exercices de code ou de terminal n’en font pas
    partie). Aucune correction n’est montrée avant la fin, et la note est donnée sur 20. Chaque QCM n’a
@@ -77,7 +86,7 @@ Pour tester en local : ouvrir `index.html`, ou lancer `python3 -m http.server` e
 
    ```js
    QCM.ajouter({
-     id: "tableur",                       // identifiant unique, enregistré dans les sessions
+     id: "tableur",                       // identifiant unique, enregistré dans les sessions ("examen" est réservé)
      titre: "Les bases du tableur",
      resume: "Cellules, formules et graphiques.",
      intro: ["Une seule réponse est bonne à chaque fois."],
@@ -243,4 +252,7 @@ enregistrée comme `{ "q": "…", "lu": true }`, un exercice de code comme
 `{ "q": "…", "code": "…", "juste": true, "essais": 2 }` : le code tapé par l’élève est conservé
 (pour un exercice de terminal, `code` contient les commandes tapées).
 Un examen blanc est une tentative marquée `"examen": true` ; la session n’en garde qu’une par QCM.
+Un examen sur plusieurs QCM est aussi marqué `"examen": true`, avec `"qcm": "examen"` : ses `themes`
+sont les id des QCM choisis, et ses questions sont désignées par `"idQcm/idQuestion"` (par exemple
+`"html/liens-1"`). La session les garde tous.
 L’export de toutes les sessions utilise `"format": "qcm-info/sessions"` avec un tableau `sessions`.

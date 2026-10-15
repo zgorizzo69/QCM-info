@@ -1,8 +1,16 @@
 /* Application : sessions → choix du QCM → choix des blocs → questions → résultat.
    Depuis l’écran des blocs, on peut aussi passer un examen blanc : des questions à choix tirées
-   au hasard, sans correction avant la fin. */
+   au hasard, sans correction avant la fin. Depuis le choix du QCM, le bouton « 📝 Examen » fait de
+   même avec des questions tirées de plusieurs QCM. */
 const LETTRES = ["A","B","C","D","E","F"];
-const NB_EXAMEN = 10;  // nombre de questions d’un examen blanc
+const NB_EXAMEN = 10;        // nombre de questions d’un examen blanc
+const NB_EXAMEN_MULTI = 20;  // nombre de questions d’un examen sur plusieurs QCM
+const BILANS_EXAMEN = [
+  { min:.9, texte:"Excellent ! Tu maîtrises ces QCM." },
+  { min:.7, texte:"Très bien : il reste quelques points à revoir, regarde la liste ci-dessous." },
+  { min:.5, texte:"C’est la moyenne. Relis les questions ratées, puis retente un examen." },
+  { min:0,  texte:"Il reste du travail : refais les QCM concernés avant de retenter l’examen." }
+];
 const panel = document.getElementById("panel");
 const strip = document.getElementById("strip");
 const hint  = document.getElementById("hint");
@@ -13,7 +21,6 @@ let session = null;     // { id, nom } de la session ouverte
 let qcm = null;         // définition du QCM en cours
 let tentative = null;   // passage en cours, tel qu’enregistré dans la session
 let ordre = [], i = 0, reps = [], repondu = false;
-const themesChoisis = {}; // id du QCM → Set des thèmes cochés
 
 function esc(s){
   return String(s).replace(/[&<>"']/g, function(c){
@@ -50,6 +57,25 @@ function surClic(id, fn){
 
 /* ---------- lecture des tentatives ---------- */
 
+// Le QCM d’une tentative. Un examen sur plusieurs QCM se lit comme un QCM dont les thèmes sont
+// les QCM choisis ; ses questions sont désignées par « idQcm/idQuestion ».
+function defDe(t){
+  if(t.qcm !== Sessions.EXAMEN) return QCM.trouver(t.qcm);
+  const defs = t.themes.map(function(id){ return QCM.trouver(id); }).filter(Boolean);
+  if(!defs.length) return null;
+  return {
+    id: Sessions.EXAMEN, multi: true, intro: [], bilans: BILANS_EXAMEN, avecLecons: false,
+    titre: defs.map(function(d){ return d.titre; }).join(" · "),
+    themes: defs.map(function(d){ return { id:d.id, nom:d.titre }; }),
+    question: function(cle){
+      const k = cle.indexOf("/");
+      const def = k > 0 && defs.find(function(d){ return d.id === cle.slice(0, k); });
+      const q = def && def.question(cle.slice(k + 1));
+      return q ? Object.assign({}, q, { id:cle, t:def.id }) : undefined;
+    }
+  };
+}
+
 // Remet une tentative enregistrée en forme pour l’affichage. Les questions retirées du QCM
 // depuis sont ignorées ; si le nombre de réponses a changé, leur ordre est retiré au sort.
 function resoudre(def, t){
@@ -75,7 +101,7 @@ function note(o){ return o.type !== "lecon" && o.type !== "projet"; }
 
 // etapes / faites : avancement (leçons comprises) ; total / bons : score.
 function bilanDe(t){
-  const def = QCM.trouver(t.qcm);
+  const def = defDe(t);
   const items = resoudre(def, t);
   const notes = items.filter(note);
   return {
@@ -94,7 +120,7 @@ function compte(def, n){
 // Une tentative dont plus aucune question n’existe (QCM retiré ou réécrit) est ignorée,
 // mais reste dans la session et dans ses exports.
 function utilisable(t){
-  const def = QCM.trouver(t.qcm);
+  const def = defDe(t);
   return !!def && t.ordre.some(function(o){return def.question(o.q);});
 }
 
@@ -103,11 +129,13 @@ function tentativesDe(s, idQcm){
   return s.tentatives.filter(function(t){return t.qcm === idQcm && !t.examen && utilisable(t);});
 }
 
+// Avec Sessions.EXAMEN : les examens sur plusieurs QCM.
 function examensDe(s, idQcm){
   return s.tentatives.filter(function(t){return t.qcm === idQcm && t.examen && utilisable(t);});
 }
 
-// L’examen blanc terminé d’un QCM (la session n’en garde qu’un), et celui en cours.
+// L’examen blanc terminé d’un QCM (la session n’en garde qu’un), et celui en cours (au plus un,
+// y compris pour les examens sur plusieurs QCM).
 function examenFini(s, idQcm){
   return examensDe(s, idQcm).filter(function(t){return t.fin;}).pop() || null;
 }
@@ -142,41 +170,101 @@ function notesDe(s){
   }).filter(Boolean);
 }
 
-function sectionNotes(s, nbQcm){
-  const notes = notesDe(s);
-  if(!notes.length) return '<h2>Mes résultats</h2><p class="vide">Termine un QCM pour obtenir ta première note.</p>';
-  const moyenne = notes.reduce(function(a, n){ return a + n.note; }, 0) / notes.length;
-  return '<h2>Mes résultats</h2>' +
-    '<div class="moyenne">' +
-      '<div class="score"><b>' + noteTexte(moyenne) + '</b><span>/ 20</span></div>' +
-      '<p>Moyenne générale · ' + notes.length + ' QCM noté' + (notes.length > 1 ? 's' : '') + ' sur ' + nbQcm + '</p>' +
-    '</div>' +
-    '<ul class="liste notes">' + notes.map(function(n){
-      return '<li><div><span class="nom">' + esc(n.def.titre) + '</span>' +
-             '<span class="sub">' + n.b.bons + ' / ' + n.b.total + ' bonnes réponses · ' +
-               n.blocs + ' bloc' + (n.blocs > 1 ? 's' : '') + ' sur ' + n.def.themes.length +
-               (n.passages > 1 ? ' · meilleure note : ' + noteTexte(n.meilleure) + ' / 20' : '') + '</span></div>' +
-             '<div class="note"><b>' + noteTexte(n.note) + '</b> / 20</div></li>';
-    }).join("") + '</ul>' +
-    '<p class="sub">La note d’un QCM est celle de ton dernier passage terminé, ramenée sur 20. ' +
-    'La moyenne générale est la moyenne de ces notes.</p>';
+function pluriel(n, mot){ return n + " " + mot + (n > 1 ? "s" : ""); }
+
+// Une note sur 20, sur fond vert (14 et plus), orange (10 et plus) ou rouge.
+function pastille(n){
+  return '<span class="pastille ' + (n >= 14 ? "bien" : n >= 10 ? "moyen" : "faible") + '">' + noteTexte(n) + '</span>';
 }
 
-function sectionExamens(s){
-  const examens = QCM.tous().map(function(def){
+function tuile(titre, valeur, unite){
+  return '<div class="tuile"><span class="tuile-titre">' + titre + '</span>' +
+         '<span class="tuile-valeur"><b>' + valeur + '</b>' + (unite ? ' ' + unite : '') + '</span></div>';
+}
+
+// Les examens sur plusieurs QCM terminés, du plus ancien au plus récent.
+function examensFinis(s){
+  return examensDe(s, Sessions.EXAMEN).filter(function(t){ return t.fin && bilanDe(t).total; });
+}
+
+// Mes résultats : la moyenne en un coup d’œil, puis une ligne par QCM avec la note du dernier
+// passage et celle de l’examen blanc.
+function sectionResultats(s, tous){
+  const notes = notesDe(s);
+  const lignes = tous.map(function(def){
+    const n = notes.find(function(x){ return x.def === def; }) || null;
     const t = examenFini(s, def.id);
-    return t && bilanDe(t).total ? { def:def, t:t, b:bilanDe(t) } : null;
+    const ex = t && bilanDe(t).total ? { t:t, b:bilanDe(t) } : null;
+    return n || ex ? { def:def, n:n, ex:ex } : null;
   }).filter(Boolean);
-  return '<h2>Examens blancs</h2>' +
-    (examens.length
-      ? '<ul class="liste notes">' + examens.map(function(x){
-          return '<li><div><span class="nom">' + esc(x.def.titre) + '</span>' +
-                 '<span class="sub">' + x.b.bons + ' / ' + x.b.total + ' bonnes réponses · le ' + quand(x.t.fin) + '</span></div>' +
-                 '<div class="actions"><div class="note"><b>' + noteTexte(note20(x.b)) + '</b> / 20</div>' +
-                 '<button class="minikey" data-revoir="' + esc(x.t.id) + '">Revoir</button></div></li>';
+  const examens = examensFinis(s);
+  const dernier = examens.length ? note20(bilanDe(examens[examens.length - 1])) : null;
+  const moyenne = notes.length ? notes.reduce(function(a, n){ return a + n.note; }, 0) / notes.length : null;
+
+  if(!lignes.length && dernier === null)
+    return '<section class="section"><h2>📊 Mes résultats</h2><p class="vide">Termine un QCM pour obtenir ta première note.</p></section>';
+  return '<section class="section"><h2>📊 Mes résultats</h2>' +
+    '<div class="tuiles">' +
+      tuile("Moyenne générale", moyenne === null ? "—" : noteTexte(moyenne), moyenne === null ? "" : "/ 20") +
+      tuile("QCM notés", notes.length, "sur " + tous.length) +
+      tuile("Dernier examen", dernier === null ? "—" : noteTexte(dernier), dernier === null ? "" : "/ 20") +
+    '</div>' +
+    (lignes.length
+      ? '<div class="notes-tete" aria-hidden="true"><span>QCM</span><span>Note</span><span>Examen blanc</span></div>' +
+        '<ul class="notes-qcm">' + lignes.map(function(l){
+          const n = l.n;
+          return '<li>' +
+            '<div class="nq-nom"><span class="nom">' + esc(l.def.titre) + '</span>' +
+              '<span class="sub">' + (n
+                ? n.b.bons + ' / ' + n.b.total + ' bonnes réponses · ' + pluriel(n.blocs, 'bloc') + ' sur ' + l.def.themes.length +
+                  (n.passages > 1 ? ' · meilleure note : ' + noteTexte(n.meilleure) + ' / 20' : '')
+                : 'Aucun passage terminé') + '</span></div>' +
+            '<div class="nq-val"><span class="nq-titre">Note</span>' +
+              (n ? pastille(n.note) + '<span class="sur">/ 20</span>' : '<span class="rien">—</span>') + '</div>' +
+            '<div class="nq-val"><span class="nq-titre">Examen blanc</span>' +
+              (l.ex ? pastille(note20(l.ex.b)) + '<span class="sur">/ 20</span>' +
+                      '<button class="minikey" data-revoir="' + esc(l.ex.t.id) + '" title="Examen blanc du ' + quand(l.ex.t.fin) + '">Revoir</button>'
+                    : '<span class="rien">—</span>') + '</div>' +
+          '</li>';
         }).join("") + '</ul>' +
-        '<p class="sub">Une seule note par QCM : un nouvel examen blanc remplace la note du précédent.</p>'
-      : '<p class="vide">Aucun examen blanc pour l’instant. Tu peux en passer un en bas de la page de chaque QCM.</p>');
+        '<p class="note-bas">La note d’un QCM est celle de ton dernier passage terminé, ramenée sur 20 ; la moyenne générale est ' +
+        'la moyenne de ces notes. Chaque QCM n’a qu’une note d’examen blanc (à passer en bas de la page du QCM) : un nouvel ' +
+        'examen blanc la remplace.</p>'
+      : '') +
+    '</section>';
+}
+
+// Mes examens : les examens sur plusieurs QCM, du plus récent au plus ancien.
+function sectionExamens(s){
+  const examens = examensFinis(s).reverse();
+  return '<section class="section"><h2>📝 Mes examens</h2>' +
+    (examens.length
+      ? '<ul class="liste examens">' + examens.map(function(t){
+          const b = bilanDe(t);
+          return '<li><div><span class="nom">Examen du ' + quand(t.fin) + '</span>' +
+                 '<span class="puces">' + defDe(t).themes.map(function(x){ return '<span class="puce">' + esc(x.nom) + '</span>'; }).join("") + '</span>' +
+                 '<span class="sub">' + b.bons + ' / ' + b.total + ' bonnes réponses</span></div>' +
+                 '<div class="actions">' + pastille(note20(b)) + '<span class="sur">/ 20</span>' +
+                 '<button class="minikey" data-revoir="' + esc(t.id) + '">Revoir</button></div></li>';
+        }).join("") + '</ul>'
+      : '<p class="vide">Aucun examen pour l’instant. Clique sur « 📝 Examen », en haut de la page, pour en passer un sur les QCM de ton choix.</p>') +
+    '</section>';
+}
+
+// Historique : tous les passages terminés, du plus récent au plus ancien, dans un bloc replié.
+function sectionHistorique(s){
+  const finies = s.tentatives.filter(function(t){return t.fin && utilisable(t);}).reverse();
+  if(!finies.length) return '';
+  return '<details class="section historique">' +
+    '<summary><h2>🕘 Historique</h2><span class="sub">' + pluriel(finies.length, 'passage') + ' terminé' + (finies.length > 1 ? 's' : '') + '</span></summary>' +
+    '<ul class="liste">' + finies.map(function(t){
+      const b = bilanDe(t);
+      const def = defDe(t);
+      return '<li><div><span class="nom"><span class="genre">' + (!t.examen ? 'QCM' : def.multi ? 'Examen' : 'Examen blanc') + '</span>' + esc(def.titre) + '</span>' +
+             '<span class="sub">' + b.bons + ' / ' + b.total + ' · le ' + quand(t.fin) + '</span></div>' +
+             '<div class="actions"><button class="minikey" data-revoir="' + esc(t.id) + '">Revoir</button></div></li>';
+    }).join("") + '</ul>' +
+  '</details>';
 }
 
 function sessionOuverte(){
@@ -277,54 +365,107 @@ function ouvrir(s){
 }
 
 /* ---------- écran 2 : choix du QCM ---------- */
+// « 📝 Examen » fait passer la liste en mode sélection : un clic coche le QCM au lieu de l’ouvrir,
+// et « Lancer l’examen » tire les questions parmi les QCM cochés.
 function ecranChoix(){
   const s = sessionOuverte();
   if(!s) return;
   qcm = null; tentative = null; repondu = false;
   entete(s.nom, '<button class="lien" id="changer">Changer de session</button>');
   strip.style.display = "none";
-  hint.textContent = "Tes réponses sont enregistrées au fur et à mesure : tu peux t’arrêter et reprendre plus tard.";
+  const aideNormale = "Tes réponses sont enregistrées au fur et à mesure : tu peux t’arrêter et reprendre plus tard.";
+  hint.textContent = aideNormale;
 
   const tous = QCM.tous();
-  const finies = s.tentatives.filter(function(t){return t.fin && utilisable(t);}).reverse();
+  const exEc = examenEnCours(s, Sessions.EXAMEN);
+  const exB = exEc && bilanDe(exEc);
 
   panel.innerHTML =
     '<h1>Choisis un QCM</h1>' +
     '<p class="lead">Chaque QCM est découpé en blocs que tu pourras choisir à l’étape suivante.</p>' +
     (tous.length
-      ? '<div class="keys" style="margin:22px 0 0">' + tous.map(function(def){
-          const ec = enCours(s, def.id);
-          const fini = tentativesDe(s, def.id).filter(function(t){return t.fin;}).pop();
-          let etat = "";
-          if(ec){
-            const b = bilanDe(ec);
-            etat = '<span class="etat encours">En cours<br>' + b.faites + ' / ' + b.etapes + '</span>';
-          } else if(fini){
-            const b = bilanDe(fini);
-            etat = '<span class="etat">Dernier score<br>' + b.bons + ' / ' + b.total + '</span>';
-          }
-          return '<button class="key" data-qcm="' + esc(def.id) + '">' +
-                 '<span class="cap">' + def.questions.length + '</span>' +
-                 '<span class="corps"><b>' + esc(def.titre) + '</b><br><span class="sub">' + esc(def.resume || "") + '</span></span>' +
-                 etat + '</button>';
-        }).join("") + '</div>'
+      ? '<div class="examen-barre">' +
+          '<p id="examenTexte"></p>' +
+          '<div class="actions">' +
+            (exEc ? '<button class="bigkey" id="examenReprendre">Reprendre l’examen — ' + exB.faites + ' / ' + exB.etapes + '</button>' : '') +
+            '<button class="bigkey" id="examenMode"></button>' +
+          '</div>' +
+        '</div>' +
+        '<div id="qcms">' +
+          '<div class="keys" style="margin:18px 0 0">' + tous.map(function(def){
+            const ec = enCours(s, def.id);
+            const fini = tentativesDe(s, def.id).filter(function(t){return t.fin;}).pop();
+            const dispo = questionsExamen(def).length;
+            let etat = "";
+            if(ec){
+              const b = bilanDe(ec);
+              etat = '<span class="etat encours">En cours<br>' + b.faites + ' / ' + b.etapes + '</span>';
+            } else if(fini){
+              const b = bilanDe(fini);
+              etat = '<span class="etat">Dernier score<br>' + b.bons + ' / ' + b.total + '</span>';
+            }
+            return '<button class="key" data-qcm="' + esc(def.id) + '" data-dispo="' + dispo + '">' +
+                   '<span class="cap"><span class="cap-n">' + def.questions.length + '</span><span class="cap-coche" aria-hidden="true">✓</span></span>' +
+                   '<span class="corps"><b>' + esc(def.titre) + '</b><br><span class="sub">' + esc(def.resume || "") + '</span></span>' +
+                   etat + '<span class="etat dispo">' + (dispo ? pluriel(dispo, 'question') : 'Pas de question<br>d’examen') + '</span></button>';
+          }).join("") + '</div>' +
+          '<div class="lancer" id="lancer" hidden>' +
+            '<span id="lancerTexte" aria-live="polite"></span>' +
+            '<button class="bigkey wire" id="lancerExamen">Lancer l’examen</button>' +
+          '</div>' +
+        '</div>'
       : '<p class="vide">Aucun QCM n’est chargé. Vérifie la liste des scripts dans index.html.</p>') +
-    sectionNotes(s, tous.length) +
+    sectionResultats(s, tous) +
     sectionExamens(s) +
-    (finies.length
-      ? '<h2>Historique</h2><ul class="liste">' + finies.map(function(t){
-          const b = bilanDe(t);
-          return '<li><div><span class="nom">' + (t.examen ? 'Examen blanc · ' : '') + esc(QCM.trouver(t.qcm).titre) + '</span>' +
-                 '<span class="sub">' + b.bons + ' / ' + b.total + ' · le ' + quand(t.fin) + '</span></div>' +
-                 '<div class="actions"><button class="minikey" data-revoir="' + esc(t.id) + '">Revoir</button></div></li>';
-        }).join("") + '</ul>'
-      : '') +
+    sectionHistorique(s) +
     '<div class="row"><button class="bigkey" id="exporter">Exporter ma session</button></div>';
+
+  let coches = null;   // les QCM cochés pour l’examen, ou null hors du mode sélection
+
+  function maj(){
+    const on = !!coches;
+    document.getElementById("qcms").classList.toggle("selection", on);
+    document.getElementById("lancer").hidden = !on;
+    const mode = document.getElementById("examenMode");
+    mode.textContent = on ? "Annuler" : "📝 Examen";
+    mode.classList.toggle("wire", !on);
+    document.getElementById("examenTexte").innerHTML = on
+      ? '<b>Clique sur les QCM de ton examen</b>, puis sur « Lancer l’examen » en bas de la liste.'
+      : '<b>Examen</b> : ' + NB_EXAMEN_MULTI + ' questions tirées au hasard dans les QCM de ton choix. ' +
+        'Pas de correction en cours de route : ta note ne s’affiche qu’à la fin.';
+    hint.textContent = on ? "Clique sur un QCM pour l’ajouter à ton examen ou l’en retirer." : aideNormale;
+    panel.querySelectorAll("[data-qcm]").forEach(function(b){
+      const coche = on && coches.has(b.dataset.qcm);
+      b.classList.toggle("choisi", coche);
+      b.classList.toggle("dim", on && b.dataset.dispo === "0");
+      if(on) b.setAttribute("aria-pressed", coche); else b.removeAttribute("aria-pressed");
+    });
+    if(!on) return;
+    let n = 0;
+    coches.forEach(function(id){ n += questionsExamen(QCM.trouver(id)).length; });
+    document.getElementById("lancerTexte").textContent = coches.size
+      ? coches.size + " QCM coché" + (coches.size > 1 ? "s" : "") + " · " + pluriel(Math.min(NB_EXAMEN_MULTI, n), "question")
+      : "Coche au moins un QCM";
+    document.getElementById("lancerExamen").disabled = !coches.size;
+  }
 
   surClic("changer", ecranSessions);
   surClic("exporter", function(){ Sessions.exporter(s.id); });
+  surClic("examenMode", function(){ coches = coches ? null : new Set(); maj(); });
+  surClic("examenReprendre", function(){ charger(exEc); afficher(); });
+  surClic("lancerExamen", function(){
+    if(!coches || !coches.size) return;
+    if(exEc && exEc.reponses.length &&
+       !confirm("Ton examen en cours (" + exB.faites + " / " + exB.etapes + ") sera abandonné. Lancer un nouvel examen ?")) return;
+    commencerExamenMulti(tous.filter(function(d){ return coches.has(d.id); }).map(function(d){ return d.id; }));
+  });
   panel.querySelectorAll("[data-qcm]").forEach(function(b){
-    b.onclick = function(){ ecranIntro(QCM.trouver(b.dataset.qcm)); };
+    b.onclick = function(){
+      if(!coches) return ecranIntro(QCM.trouver(b.dataset.qcm));
+      if(b.dataset.dispo === "0") return;
+      if(coches.has(b.dataset.qcm)) coches.delete(b.dataset.qcm); else coches.add(b.dataset.qcm);
+      maj();
+    };
   });
   panel.querySelectorAll("[data-revoir]").forEach(function(b){
     b.onclick = function(){
@@ -332,18 +473,23 @@ function ecranChoix(){
       resultat();
     };
   });
+  if(tous.length) maj();
 }
 
 /* ---------- écran 3 : choix des blocs ---------- */
+// Tous les blocs sont choisis d’office et ne se cliquent pas : pour en retirer, on passe d’abord
+// par le bouton gris « Choisir les blocs ».
 function ecranIntro(def){
   const s = sessionOuverte();
   if(!s) return;
   qcm = def;
   entete(s.nom, '<button class="lien" id="retour">Tous les QCM</button>');
   strip.style.display = "none";
-  hint.textContent = "Chaque bloc peut être passé séparément : clique dessus pour l’activer ou le désactiver.";
+  hint.textContent = "Chaque bloc peut être passé séparément : clique sur « Choisir les blocs », puis sur un bloc pour l’activer ou le désactiver.";
 
-  const choisis = themesChoisis[def.id] || (themesChoisis[def.id] = new Set(def.themes.map(function(t){return t.id;})));
+  const tousLesBlocs = def.themes.map(function(t){return t.id;});
+  let choisis = new Set(tousLesBlocs);
+  let libre = false;   // vrai après « Choisir les blocs »
   const ec = enCours(s, def.id);
   const b = ec && bilanDe(ec);
   const nbExamen = Math.min(NB_EXAMEN, questionsExamen(def).length);
@@ -356,18 +502,19 @@ function ecranIntro(def){
     def.intro.map(function(p){return '<p class="lead">' + esc(p) + '</p>';}).join("") +
     (ec ? '<p class="alerte">Tu t’es arrêté après ' + compte(def, b.faites) + ' sur ' + b.etapes +
           ', le ' + quand(ec.debut) + '. Reprends là où tu en étais, ou recommence avec les blocs choisis ci-dessous.</p>' : '') +
-    '<div class="keys" style="margin:22px 0 0" id="blocs">' +
+    '<p class="blocs-etat" id="blocsEtat" aria-live="polite"></p>' +
+    '<div class="keys" id="blocs">' +
       def.themes.map(function(t){
         const n = def.questions.filter(function(q){return q.t===t.id;}).length;
-        const on = choisis.has(t.id);
-        return '<button class="key' + (on ? " picked-ok" : " dim") + '" data-t="' + esc(t.id) + '" aria-pressed="' + on + '">' +
+        return '<button class="key" data-t="' + esc(t.id) + '">' +
                '<span class="cap">' + n + '</span><span><b>' + esc(t.nom) + '</b><br>' +
                '<span class="sub">' + fmt(t.note || "") + '</span></span></button>';
       }).join("") +
     '</div>' +
     '<div class="row" style="gap:12px">' +
       (ec ? '<button class="bigkey" id="reprendre">Reprendre — ' + b.faites + ' / ' + b.etapes + '</button>' : '') +
-      '<button class="bigkey wire" id="go"></button>' +
+      '<div class="groupe"><button class="bigkey gris" id="choisirBlocs"></button>' +
+      '<button class="bigkey wire" id="go"></button></div>' +
     '</div>' +
     (nbExamen ? '<div class="encart" id="encartExamen">' +
       '<h2>📝 Examen blanc</h2>' +
@@ -380,25 +527,47 @@ function ecranIntro(def){
         '<button class="bigkey" id="examen">' + (exEc ? 'Nouvel examen blanc' : 'Passer l’examen blanc') + '</button>' +
       '</div></div>' : '');
 
+  const choisir = document.getElementById("choisirBlocs");
+
   function maj(){
     const n = def.questions.filter(function(q){return choisis.has(q.t);}).length;
     const go = document.getElementById("go");
     go.textContent = n ? (ec ? "Recommencer — " : "Commencer — ") + compte(def, n) : "Choisis au moins un bloc";
     go.disabled = !n;
     go.style.opacity = n ? "1" : ".45";
+    document.getElementById("blocs").classList.toggle("verrou", !libre);
+    panel.querySelectorAll("#blocs .key").forEach(function(btn){
+      const on = choisis.has(btn.dataset.t);
+      btn.classList.toggle("picked-ok", on);
+      btn.classList.toggle("dim", !on);
+      btn.setAttribute("aria-pressed", on);
+      btn.setAttribute("aria-disabled", !libre);
+    });
+    choisir.textContent = libre ? "Reprendre tous les blocs" : "Choisir les blocs";
+    document.getElementById("blocsEtat").innerHTML = libre
+      ? 'Clique sur un bloc pour le retirer ou le remettre : <b>' + choisis.size + ' bloc' + (choisis.size > 1 ? 's' : '') +
+        ' sur ' + tousLesBlocs.length + '</b> au programme.'
+      : '✅ <b>Tous les blocs sont au programme.</b> Pour en retirer, clique sur « Choisir les blocs ».';
   }
 
   panel.querySelectorAll("#blocs .key").forEach(function(btn){
     btn.onclick = function(){
+      if(!libre){   // blocs verrouillés : on montre le bouton qui permet de les choisir
+        choisir.classList.remove("eclaire");
+        void choisir.offsetWidth;   // relance l’animation
+        choisir.classList.add("eclaire");
+        return;
+      }
       const id = btn.dataset.t;
       if(choisis.has(id)) choisis.delete(id); else choisis.add(id);
-      const on = choisis.has(id);
-      btn.classList.toggle("picked-ok", on);
-      btn.classList.toggle("dim", !on);
-      btn.setAttribute("aria-pressed", on);
       maj();
     };
   });
+  choisir.onclick = function(){
+    libre = !libre;
+    if(!libre) choisis = new Set(tousLesBlocs);
+    maj();
+  };
 
   maj();
   surClic("retour", ecranChoix);
@@ -432,9 +601,28 @@ function commencerExamen(def){
   afficher();
 }
 
+// Examen sur plusieurs QCM : les questions sont réparties aussi également que possible entre les
+// QCM choisis (un QCM qui n’en a plus laisse sa place aux autres), puis mélangées.
+function commencerExamenMulti(ids){
+  const pioches = ids.map(function(id){
+    return melange(questionsExamen(QCM.trouver(id))).map(function(q){ return { id:id, q:q }; });
+  });
+  const tirees = [];
+  while(tirees.length < NB_EXAMEN_MULTI && pioches.some(function(p){ return p.length; })){
+    melange(pioches).forEach(function(p){   // à chaque tour, l’ordre des QCM est tiré au sort
+      if(p.length && tirees.length < NB_EXAMEN_MULTI) tirees.push(p.shift());
+    });
+  }
+  const items = melange(tirees).map(function(x){
+    return { q:x.id + "/" + x.q.id, p:melange(x.q.r.map(function(_, n){return n;})) };
+  });
+  charger(Sessions.nouvelleTentative(session.id, Sessions.EXAMEN, ids, items, true));
+  afficher();
+}
+
 function charger(t){
   tentative = t;
-  qcm = QCM.trouver(t.qcm);
+  qcm = defDe(t);
   ordre = resoudre(qcm, t);
   reps = ordre.map(function(o){
     const r = reponseDe(t, o.id);
@@ -670,7 +858,7 @@ function afficher(){
   strip.style.display = "flex";
   const item = ordre[i];
   const theme = qcm.themes.find(function(t){return t.id===item.t;});
-  topTitle.textContent = tentative.examen ? "Examen blanc · " + qcm.titre : theme.nom;
+  topTitle.textContent = !tentative.examen ? theme.nom : qcm.multi ? "Examen · " + qcm.themes.length + " QCM" : "Examen blanc · " + qcm.titre;
   topCount.textContent = (qcm.avecLecons && !tentative.examen ? "Étape " : "Question ") + (i+1) + " sur " + ordre.length;
   if(!tentative.examen && questionsExamen(qcm).length){
     topCount.insertAdjacentHTML("beforeend", ' · <button class="lien" id="versExamen">📝 Examen blanc</button>');
@@ -789,6 +977,12 @@ function montrerReponse(n){
   aide('Appuie sur <kbd>Entrée</kbd> pour continuer');
 }
 
+// Dans un examen sur plusieurs QCM, le thème d’une question est son QCM.
+function nomTheme(id){
+  const t = qcm.themes.find(function(x){ return x.id === id; });
+  return t ? t.nom : "";
+}
+
 // Question d’examen blanc : on choisit (et on peut changer d’avis), puis on valide.
 // Ni la bonne réponse ni l’explication ne sont montrées avant le résultat.
 let choixExamen = null;
@@ -797,7 +991,7 @@ function afficherExamen(item){
   const dernier = (i === ordre.length - 1);
   choixExamen = null;
   panel.innerHTML =
-    '<p class="theme">📝 Examen blanc</p>' +
+    '<p class="theme">📝 ' + (qcm.multi ? 'Examen · ' + esc(nomTheme(item.t)) : 'Examen blanc') + '</p>' +
     '<p class="question">' + fmt(item.q) + '</p>' + blocsQuestion(item) +
     '<div class="keys" id="keys">' +
       item.r.map(function(txt, n){
@@ -1335,22 +1529,25 @@ function resultat(){
     if(rep && rep.juste) return null;
     if(o.type === "code" || o.type === "js") return { q:o.q, solution:o.src.solution, e:o.e || "" };
     if(o.type === "terminal") return { q:o.q, solution:Terminal.texteSolution(o.src.solution), e:o.e || "" };
-    return { q:o.q, r:o.r[o.b], e:o.e, choix: rep ? o.src.r[rep.choix] : null };
+    return { q:o.q, r:o.r[o.b], e:o.e, choix: rep ? o.src.r[rep.choix] : null, qcm: qcm.multi ? nomTheme(o.t) : null };
   }).filter(Boolean);
 
   i = -1;
   repondu = true;
   strip.style.display = "flex";
   const examen = !!tentative.examen;
-  entete(examen ? "Résultat de l’examen blanc" : "Résultat", '<button class="lien" id="retour">Tous les QCM</button>');
+  const multi = !!qcm.multi;   // examen sur plusieurs QCM
+  entete(!examen ? "Résultat" : multi ? "Résultat de l’examen" : "Résultat de l’examen blanc",
+         '<button class="lien" id="retour">Tous les QCM</button>');
   dessinerStrip();
-  hint.textContent = tentative.fin ? (examen ? "Examen blanc · " : "") + qcm.titre + " · terminé le " + quand(tentative.fin) : "";
+  hint.textContent = tentative.fin ? (!examen ? "" : multi ? "Examen · " : "Examen blanc · ") + qcm.titre + " · terminé le " + quand(tentative.fin) : "";
 
   panel.innerHTML =
-    (examen ? '<p class="theme">📝 Examen blanc · ' + esc(qcm.titre) + '</p>' +
+    (examen ? '<p class="theme">📝 ' + (multi ? 'Examen · ' + qcm.themes.length + ' QCM' : 'Examen blanc · ' + esc(qcm.titre)) + '</p>' +
               '<div class="score"><b>' + noteTexte(note20({ bons:bons, total:total })) + '</b><span>/ 20</span></div>' +
-              '<p class="sub">' + bons + ' bonne' + (bons > 1 ? 's' : '') + ' réponse' + (bons > 1 ? 's' : '') + ' sur ' + total +
-              '. C’est ta note d’examen blanc pour ce QCM, visible sur la page des QCM.</p>'
+              '<p class="sub">' + bons + ' bonne' + (bons > 1 ? 's' : '') + ' réponse' + (bons > 1 ? 's' : '') + ' sur ' + total + '. ' +
+              (multi ? 'Ta note est enregistrée dans « Mes examens », sur la page des QCM.'
+                     : 'C’est ta note d’examen blanc pour ce QCM, visible sur la page des QCM.') + '</p>'
             : '<div class="score"><b>' + bons + '</b><span>bonnes réponses sur ' + total + '</span></div>') +
     (bilan ? '<p class="lead" style="max-width:56ch">' + fmt(bilan.texte) + '</p>' : '') +
     '<div class="bars">' +
@@ -1368,7 +1565,7 @@ function resultat(){
             return '<li><q>' + fmt(r.q) + '</q><em>Une solution possible :</em>' +
                    '<pre class="code">' + esc(r.solution) + '</pre>' +
                    (r.e ? '<em>' + fmt(r.e) + '</em>' : '') + '</li>';
-          return '<li><q>' + fmt(r.q) + '</q>' +
+          return '<li>' + (r.qcm ? '<span class="origine">' + esc(r.qcm) + '</span>' : '') + '<q>' + fmt(r.q) + '</q>' +
                  (r.choix ? '<em>Tu as répondu : ' + fmt(r.choix) + '</em>' : '') +
                  '<em><b>' + fmt(r.r) + '</b> — ' + fmt(r.e) + '</em></li>';
         }).join("") + '</ul>'
@@ -1376,16 +1573,16 @@ function resultat(){
     '<div class="row" style="gap:12px">' +
       '<button class="bigkey" id="print">Imprimer</button>' +
       (!examen && questionsExamen(qcm).length ? '<button class="bigkey" id="versExamen">📝 Examen blanc</button>' : '') +
-      '<button class="bigkey wire" id="again">' + (examen ? 'Nouvel examen blanc' : 'Recommencer') + '</button>' +
+      '<button class="bigkey wire" id="again">' + (!examen ? 'Recommencer' : multi ? 'Nouvel examen' : 'Nouvel examen blanc') + '</button>' +
     '</div>';
 
   surClic("retour", ecranChoix);
   surClic("print", function(){ window.print(); });
   surClic("versExamen", allerExamen);
   surClic("again", function(){
+    if(multi) return commencerExamenMulti(qcm.themes.map(function(t){ return t.id; }));
     if(examen) return commencerExamen(qcm);
-    themesChoisis[qcm.id] = new Set(tentative.themes);
-    commencer(qcm, themesChoisis[qcm.id]);
+    commencer(qcm, new Set(tentative.themes));
   });
 }
 

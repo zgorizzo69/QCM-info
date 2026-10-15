@@ -7,12 +7,15 @@
        ordre:[ { q:idQuestion, p:[ordre d’affichage des réponses] } ],
        reponses:[ { q:idQuestion, choix:indiceDansR, juste:bool, le:dateISO } ] }
    « examen » marque un examen blanc : la session n’en garde qu’un par QCM, le dernier.
+   Un examen sur plusieurs QCM a pour qcm "examen" (EXAMEN) et pour thèmes les QCM choisis ; ses
+   questions sont désignées par « idQcm/idQuestion ». La session les garde tous.
    « choix » est l’indice de la réponse dans la liste r du fichier QCM, avant mélange. */
 const Sessions = (function(){
   const CLE = "qcm-info.sessions";
   const FORMAT_UNE = "qcm-info/session";
   const FORMAT_TOUTES = "qcm-info/sessions";
   const VERSION = 1;
+  const EXAMEN = "examen";   // id réservé (voir js/qcm.js)
 
   let persistant = true;
   let memoire = { version:VERSION, sessions:[] };
@@ -86,6 +89,8 @@ const Sessions = (function(){
   function jour(){ return new Date().toISOString().slice(0, 10); }
 
   return {
+    EXAMEN: EXAMEN,
+
     persistant: function(){ lire(); return persistant; },
 
     liste: function(){
@@ -106,7 +111,8 @@ const Sessions = (function(){
       });
     },
 
-    // Un nouvel examen blanc remplace l’examen non terminé du même QCM, s’il y en a un.
+    // Un nouvel examen blanc remplace l’examen non terminé du même QCM, s’il y en a un ; un nouvel
+    // examen sur plusieurs QCM remplace celui qui n’est pas terminé.
     nouvelleTentative: function(idSession, qcm, themes, ordre, examen){
       const t = { id:nouvelId(), qcm:qcm, debut:maintenant(), fin:null, themes:themes, ordre:ordre, reponses:[] };
       if(examen) t.examen = true;
@@ -120,7 +126,8 @@ const Sessions = (function(){
     },
 
     // Enregistre une réponse dès qu’elle est donnée ; « fin » est posée à la dernière question.
-    // Un examen blanc terminé remplace le précédent examen blanc du même QCM.
+    // Un examen blanc terminé remplace le précédent examen blanc du même QCM (les examens sur
+    // plusieurs QCM, eux, s’ajoutent).
     repondre: function(idSession, idTentative, reponse, derniere){
       return modifier(function(etat){
         const s = chercher(etat, idSession);
@@ -129,7 +136,7 @@ const Sessions = (function(){
         t.reponses = t.reponses.filter(function(r){return r.q !== reponse.q;});
         t.reponses.push(reponse);
         if(derniere) t.fin = reponse.le;
-        if(derniere && t.examen)
+        if(derniere && t.examen && t.qcm !== EXAMEN)
           s.tentatives = s.tentatives.filter(function(x){ return x === t || !(x.examen && x.qcm === t.qcm); });
         s.majLe = reponse.le;
         return t;
