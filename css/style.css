@@ -827,3 +827,98 @@ pre.code{
   code{white-space:normal;overflow-wrap:anywhere}
 }
 
+/* ---------- jeux du cours sur le binaire (js/binaire-jeux.js) ---------- */
+.bin-code{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:var(--wire);letter-spacing:.06em}
+.bin-cible{display:inline-block;min-width:1.8em;padding:0 8px;border-radius:6px;background:#FFF0B8;text-align:center}
+.bin-reglage{display:flex;align-items:center;gap:10px;font-weight:700}
+.bin-reglage b{font-size:1.2rem;min-width:1em;text-align:center}
+.bin-ampoules{display:flex;flex-wrap:wrap;gap:14px;margin:16px 0 4px}
+.bin-ampoule{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:74px;padding:10px 0 8px;border-radius:12px;border:1px solid var(--bevel);
+  background:#F1F4F6;cursor:pointer;box-shadow:0 3px 0 var(--bevel);font:inherit;
+}
+.bin-bulbe{font-size:2.4rem;line-height:1;filter:grayscale(1) brightness(.75);opacity:.55;transition:all .2s}
+.bin-ampoule.on{background:#FFF7D1;border-color:#E2C46A;box-shadow:0 3px 0 #C9A53A}
+.bin-ampoule.on .bin-bulbe{filter:drop-shadow(0 0 12px #FFD54A);opacity:1}
+.bin-bit{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;font-size:1.3rem}
+.bin-ampoule:focus-visible,.bin-carte:focus-visible{outline:3px solid var(--wire);outline-offset:3px}
+.bin-trouvees{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.bin-trouvees span{font-family:"JetBrains Mono",ui-monospace,monospace;padding:2px 8px;border-radius:5px;background:#E7F5EC;border:1px solid #A8D8B9}
+
+.bin-compteurs{display:flex;flex-wrap:wrap;gap:18px}
+.bin-compteur{flex:1 1 200px}
+.bin-nom{margin:0 0 6px !important;font-weight:700}
+.bin-rouleaux{display:flex;gap:3px}
+.bin-rouleau{
+  width:34px;height:46px;display:grid;place-items:center;border-radius:6px;
+  background:#17212B;color:#F4F7FA;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.5rem;font-weight:700;
+  box-shadow:inset 0 6px 8px rgba(0,0,0,.45),inset 0 -6px 8px rgba(0,0,0,.45);
+}
+.bin-rouleau.change{animation:bin-tour .45s ease}
+@keyframes bin-tour{0%{transform:translateY(-35%);opacity:.2;color:#FFD54A}60%{color:#FFD54A}100%{transform:none;opacity:1}}
+.bin-chiffres{margin:6px 0 0 !important;font-size:.82rem;color:var(--ink-soft)}
+.bin-retenue{min-height:1.5em;font-weight:700;color:var(--wire)}
+
+.bin-cartes{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 0}
+.bin-carte{
+  width:96px;height:130px;padding:8px;border-radius:10px;cursor:pointer;font:inherit;
+  display:flex;flex-direction:column;justify-content:space-between;align-items:center;
+  border:2px solid #1D4E89;color:#fff;
+  background:repeating-linear-gradient(45deg,#1D4E89 0 8px,#2A6AB5 8px 16px);
+  box-shadow:0 4px 0 #12345D;transition:transform .15s;
+}
+.bin-carte:hover{transform:translateY(-2px)}
+.bin-carte.face{background:#fff;color:var(--ink);border-color:var(--bevel);box-shadow:0 4px 0 var(--bevel)}
+.bin-points{flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4px;width:100%}
+.bin-points i{width:12px;height:12px;border-radius:50%;background:#E4572E}
+.bin-points.n16 i{width:9px;height:9px;gap:3px}
+.bin-valeur{font-weight:900;font-size:1.25rem}
+.bin-bits{display:flex;gap:10px;margin:6px 0 0}
+.bin-bits span{width:96px;text-align:center;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.4rem;font-weight:700;color:var(--wire)}
+.bin-somme{font-size:1.1rem}
+.bin-somme .bin-cacher{margin-left:8px;vertical-align:2px}
+/* L’aide du message secret : 8 cartes plus petites, sans points, alignées sur leurs bits. */
+.bin-aide{margin:14px 0 0;padding:12px 14px;border:1px dashed var(--bevel);border-radius:8px;background:#F7F9FA}
+.bin-aide-titre{margin:0 !important;font-weight:900}
+.bin-cartes.compactes,.bin-bits.compactes{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;max-width:560px}
+.bin-cartes.compactes .bin-carte{width:auto;height:70px;padding:4px 0;justify-content:center}
+.bin-cartes.compactes .bin-valeur{font-size:1.05rem}
+.bin-bits.compactes span{width:auto;font-size:1.2rem}
+.bin-somme b{font-size:1.4rem}
+
+.bin-tableau{border-collapse:collapse;margin:8px 0 4px;font-family:"JetBrains Mono",ui-monospace,monospace}
+.bin-tableau th{padding:3px 10px 3px 0;text-align:left;font-family:"Chivo",system-ui,sans-serif;font-size:.85rem;color:var(--ink-soft)}
+.bin-tableau td{min-width:34px;padding:3px 6px;text-align:center;border:1px solid #CFD8DD;background:#fff}
+.bin-tableau td.un{background:#FFF0B8;font-weight:700}
+
+.bin-saisie{width:100%;margin:8px 0 0}
+.bin-lettres{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.bin-lettre{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 10px;border:1px solid #CFD8DD;border-radius:8px;background:#fff}
+.bin-lettre b{font-size:1.5rem}
+.bin-lettre span{font-size:.85rem;color:var(--ink-soft)}
+.bin-titre{margin:22px 0 0;font-size:1rem;font-weight:900}
+.bin-secret{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+.bin-secret span{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;padding:6px 10px;border-radius:6px;background:#17212B;color:#9CD3FF}
+.bin-alphabet{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:4px;margin:10px 0 0;font-size:.85rem}
+.bin-alphabet span{display:flex;justify-content:space-between;padding:2px 6px;border:1px solid #DDE3E7;border-radius:4px;background:#fff}
+
+.bin-couleur{display:grid;grid-template-columns:minmax(0,160px) 1fr;gap:18px;align-items:start}
+.bin-pastille{aspect-ratio:1;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 1px var(--bevel),0 6px 16px rgba(0,0,0,.18)}
+.bin-canal{display:grid;grid-template-columns:3.4em 1fr 2.6em;align-items:center;gap:4px 10px;margin:0 0 8px;font-weight:700}
+.bin-canal input{width:100%;accent-color:var(--wire)}
+.bin-canal code{font-size:1rem;text-align:center}
+.bin-detail{grid-column:2 / 4;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.8rem;font-weight:400;color:var(--ink-soft)}
+@media (max-width:600px){
+  .bin-couleur{grid-template-columns:1fr}
+  .bin-pastille{max-width:120px}
+  .bin-carte{width:58px;height:96px;padding:5px}
+  .bin-points i{width:7px;height:7px}
+  .bin-points.n16 i{width:6px;height:6px}
+  .bin-bits{gap:10px}
+  .bin-bits span{width:58px}
+  .bin-rouleau{width:28px;height:40px;font-size:1.25rem}
+  .bin-cartes.compactes,.bin-bits.compactes{gap:4px}
+  .bin-cartes.compactes .bin-carte{height:56px;border-radius:7px}
+  .bin-cartes.compactes .bin-valeur{font-size:.8rem}
+}

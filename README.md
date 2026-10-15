@@ -7,6 +7,11 @@ apprendre à coder. C’est un site statique, sans installation ni serveur : il 
 QCM disponibles:
 
 - **Ce que tu sais déjà sur l’ordinateur** (`qcm/positionnement.js`) : QCM de positionnement.
+- **Le binaire** (`qcm/binaire.js`) : pour des élèves qui n’ont jamais changé de base, pas à pas :
+  les bits (des ampoules à allumer), la base 10 et ses retenues (un compteur kilométrique), compter
+  en binaire, lire et écrire un nombre avec des cartes binaires, un entraînement, les octets et les
+  lettres (son prénom en binaire, un message secret), et un bonus sur l’hexadécimal et les couleurs
+  du CSS. Les jeux sont dans `js/binaire-jeux.js`.
 - **Intelligence artificielle et sécurité en ligne** (`qcm/ia-securite.js`) : IA et LLM, tokens, jeu du
   mot suivant, entraînement, inférence, hallucinations, diffusion d’images, puis sécurité en ligne et
   vérification de l’information. Les leçons contiennent de petits jeux (`js/ia-jeux.js`).
